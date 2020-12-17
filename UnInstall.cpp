@@ -63,7 +63,7 @@ void WINAPI GetGlobalInfoW(struct GlobalInfo *Info)
 	Info->StructSize = sizeof(GlobalInfo);
 	Info->MinFarVersion = FARMANAGERVERSION;
 
-	Info->Version = 	MAKEFARVERSION(1,10,15,0,VS_RELEASE);
+	Info->Version = 	MAKEFARVERSION(1,10,17,0,VS_RELEASE);
 	Info->Guid = MainGuid;
 	Info->Title = L"UnInstall";
 	Info->Description = L"UnInstall";

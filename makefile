@@ -101,6 +101,9 @@ PREPROC = $(TOOLSDIR)\preproc $** $@
 $(OUTDIR)\UnInstall.rc: project.ini UnInstall.rc
   $(PREPROC)
 
+$(OUTDIR)\version.h: project.ini UnInstall_h.h
+  $(PREPROC)
+
 $(OUTDIR)\plugin.def: project.ini $(DEFFILE)
   $(PREPROC)
 
