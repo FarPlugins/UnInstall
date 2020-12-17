@@ -725,7 +725,7 @@ HANDLE WINAPI OpenPlugin(int /*OpenFrom*/, INT_PTR /*Item*/)
 	Info.DialogEx(Info.ModuleNumber,-1,-1,0,0,"Contents",DialogItems,ARRAYSIZE(DialogItems),0,0,DlgProc,0);
 #endif
 #ifdef FARAPI18
-	HANDLE h_dlg = Info.DialogInit(Info.ModuleNumber,-1,-1,0,0,L"Contents",DialogItems,ARRAYSIZE(DialogItems),0,0,DlgProc,0);
+	HANDLE h_dlg = Info.DialogInit(Info.ModuleNumber,-1,-1,1,1,L"Contents",DialogItems,ARRAYSIZE(DialogItems),0,0,DlgProc,0);
 
 	if(h_dlg != INVALID_HANDLE_VALUE)
 	{
