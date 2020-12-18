@@ -1,9 +1,9 @@
 ﻿.Language=English,English
-.PluginContents=<(NAME)>
+.PluginContents=UnInstall
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Contents#
 
  #Columns#
@@ -50,7 +50,7 @@ $^#Contents#
  ~Discussion~@http://forum.farmanager.com/viewtopic.php?t=3597@
 
 @Configuration
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Configuration#
 
  #Show in the Editor#, #Show in the Viewer#
@@ -76,7 +76,7 @@ in the registry - this command will be used instead of «msiexec /?{GUID}».
  ~Contents~@Contents@
 
 @UninstallEntry
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Uninstall entry information#
 
  Use #PgUp#/#PgDn# to view previous/next program
@@ -84,7 +84,7 @@ $^#Uninstall entry information#
  ~Contents~@Contents@
 
 @ActionMenu
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Select action#
 
  #F7# change proirity of uninstall process

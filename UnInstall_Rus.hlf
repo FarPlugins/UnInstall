@@ -3,7 +3,7 @@
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^UnInstall#
 $^#Содержание#
 
  #Колонки#
@@ -51,7 +51,7 @@ $^#Содержание#
  ~Обсуждение~@http://forum.farmanager.com/viewtopic.php?t=3597@
 
 @Configuration
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Настройка плагина#
 
  #Показывать в редакторе#, #Показывать в просмотрщике#
@@ -78,7 +78,7 @@ $^#Настройка плагина#
  ~Содержание~@Contents@
 
 @UninstallEntry
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Информация о программе#
 
  #PgUp#/#PgDn# перейти к предыдущей/следующей программе.
@@ -86,7 +86,7 @@ $^#Информация о программе#
  ~Содержание~@Contents@
 
 @ActionMenu
-$^#<(NAME)> <(VER_MAJOR)>.<(VER_MINOR)>.<(VER_PATCH)>#
+$^#UnInstall#
 $^#Выбор действия#
 
  #F7# сменить приоритет запускаемого процесса
