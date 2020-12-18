@@ -1,0 +1,72 @@
+project(UnInstall CXX)
+
+set(SRC_CPP
+    UnInstall.cpp
+    UnInstall.hpp
+    DlgBuilder.hpp
+    FarLang.h
+    guid.hpp
+    Memory.h)
+
+set(SRC_DEF UnInstallW3.def)
+
+#====================================================
+# common flags
+#====================================================
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  # defaut for msvc project
+  # CMAKE_CXX_FLAGS= /DWIN32 /D_WINDOWS /GR /EHsc
+  # CMAKE_CXX_FLAGS_DEBUG= /MDd /Zi /Ob0 /Od /RTC1
+  # CMAKE_CXX_FLAGS_RELEASE= /MD /O2 /Ob2 /DNDEBUG
+
+  set(FLAGS_CXX_DEFAULT /Zi)
+  set(FLAGS_CXX_RELEASE /W3 /Oi /Ot /GL /GS-)
+  set(FLAGS_CXX_DEBUG /W4 /GS)
+
+  set(LINK_FLAGS "/MAP /MANIFEST:NO")
+
+  # build with debug info in pdb
+  if (CMAKE_BUILD_TYPE MATCHES "Release")
+    set(LINK_FLAGS "${LINK_FLAGS} /incremental:no /OPT:REF /OPT:ICF /debug /ltcg")
+  endif ()
+
+  add_definitions(-DFARAPI3 -DUNICODE -D_UNICODE)
+endif ()
+
+# set options for target
+set(MAIN_FLAGS_CXX_DEBUG ${FLAGS_CXX_DEBUG} ${FLAGS_CXX_DEFAULT})
+set(MAIN_FLAGS_CXX_RELEASE ${FLAGS_CXX_RELEASE} ${FLAGS_CXX_DEFAULT})
+set(MAIN_FLAGS_C_DEBUG ${FLAGS_C_DEBUG} ${FLAGS_C_DEFAULT})
+set(MAIN_FLAGS_C_RELEASE ${FLAGS_C_RELEASE} ${FLAGS_C_DEFAULT})
+#====================================================
+# build
+#====================================================
+
+set(SRC_FILES ${SRC_CPP} ${SRC_DEF})
+add_library(UnInstall SHARED ${SRC_FILES})
+target_include_directories(UnInstall
+    PUBLIC ${PROJECT_SOURCE_DIR}/../farsdk/unicode3
+    )
+
+set_target_properties(UnInstall PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+    )
+
+if (${CMAKE_BUILD_TYPE} MATCHES Debug)
+  target_compile_options(UnInstall
+      PUBLIC $<$<COMPILE_LANGUAGE:C>:${MAIN_FLAGS_C_DEBUG}>
+      PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${MAIN_FLAGS_CXX_DEBUG}>
+      )
+else ()
+  target_compile_options(UnInstall
+      PUBLIC $<$<COMPILE_LANGUAGE:C>:${MAIN_FLAGS_C_RELEASE}>
+      PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${MAIN_FLAGS_CXX_RELEASE}>
+      )
+endif ()
+
+set_target_properties(UnInstall
+    PROPERTIES
+    LINK_FLAGS "${LINK_FLAGS}"
+    )
