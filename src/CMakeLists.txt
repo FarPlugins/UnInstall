@@ -6,7 +6,9 @@ set(SRC_CPP
     DlgBuilder.hpp
     FarLang.h
     guid.hpp
-    Memory.h)
+    Memory.h
+    version.hpp
+    UnInstall.rc)
 
 set(SRC_DEF UnInstallW3.def)
 
@@ -18,6 +20,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   # CMAKE_CXX_FLAGS= /DWIN32 /D_WINDOWS /GR /EHsc
   # CMAKE_CXX_FLAGS_DEBUG= /MDd /Zi /Ob0 /Od /RTC1
   # CMAKE_CXX_FLAGS_RELEASE= /MD /O2 /Ob2 /DNDEBUG
+
+  if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
+  else ()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+  endif ()
 
   set(FLAGS_CXX_DEFAULT /Zi)
   set(FLAGS_CXX_RELEASE /W3 /Oi /Ot /GL /GS-)
@@ -31,6 +39,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   endif ()
 
   add_definitions(-DFARAPI3 -DUNICODE -D_UNICODE)
+
+  if (IS_x64_PLATFORM)
+    set(CMAKE_RC_FLAGS -D_WIN64)
+  endif ()
 endif ()
 
 # set options for target
