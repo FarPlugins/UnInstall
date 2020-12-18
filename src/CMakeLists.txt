@@ -6,7 +6,6 @@ set(SRC_CPP
     DlgBuilder.hpp
     FarLang.h
     guid.hpp
-    Memory.h
     version.hpp
     UnInstall.rc)
 

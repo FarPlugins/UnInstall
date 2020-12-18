@@ -5,7 +5,6 @@
 #include <strsafe.h>
 #include "plugin.hpp"
 #include "memory.h"
-#define realloc my_realloc
 #ifndef nullptr
 #define nullptr NULL
 #endif
@@ -76,7 +75,6 @@ void WINAPI SetStartupInfo(const struct PluginStartupInfo *psInfo)
 	Info = *psInfo;
 	FSF = *psInfo->FSF;
 	Info.FSF = &FSF;
-	InitHeap();
 #ifndef FARAPI3
 	StringCchCopy(PluginRootKey,ARRAYSIZE(PluginRootKey),Info.RootKey);
 	StringCchCat(PluginRootKey,ARRAYSIZE(PluginRootKey),_T("\\UnInstall"));
