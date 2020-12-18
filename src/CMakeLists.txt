@@ -9,7 +9,7 @@ set(SRC_CPP
     version.hpp
     UnInstall.rc)
 
-set(SRC_DEF UnInstallW3.def)
+set(SRC_DEF UnInstall.def)
 
 #====================================================
 # common flags
@@ -56,7 +56,7 @@ set(MAIN_FLAGS_C_RELEASE ${FLAGS_C_RELEASE} ${FLAGS_C_DEFAULT})
 set(SRC_FILES ${SRC_CPP} ${SRC_DEF})
 add_library(UnInstall SHARED ${SRC_FILES})
 target_include_directories(UnInstall
-    PUBLIC ${PROJECT_SOURCE_DIR}/../farsdk/unicode3
+    PUBLIC ${PROJECT_SOURCE_DIR}/../farsdk/unicode
     )
 
 set_target_properties(UnInstall PROPERTIES
