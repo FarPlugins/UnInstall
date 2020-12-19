@@ -1,4 +1,5 @@
 # Clion project files
 /.idea
 /cmake-build*
-/build
+/build*
+/bin
