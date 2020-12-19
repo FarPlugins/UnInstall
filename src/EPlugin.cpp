@@ -5,11 +5,7 @@ static struct FarStandardFunctions FSF;
 
 const TCHAR* GetMsg(int MsgId)
 {
-#ifdef FARAPI3
 	return(Info.GetMsg(&MainGuid,MsgId));
-#else
-	return(Info.GetMsg(Info.ModuleNumber,MsgId));
-#endif
 }
 
 void ShowHelp(const TCHAR * HelpTopic)
@@ -19,15 +15,9 @@ void ShowHelp(const TCHAR * HelpTopic)
 
 int EMessage(const TCHAR * const * s, int nType, int n)
 {
-#ifdef FARAPI3
 	return Info.Message(&MainGuid, &AnyMessage, FMSG_ALLINONE|nType, NULL, s,
 	                    0, //этот параметр при FMSG_ALLINONE игнорируется
 	                    n); //количество кнопок
-#else
-	return Info.Message(Info.ModuleNumber, FMSG_ALLINONE|nType, NULL, s,
-	                  0, //этот параметр при FMSG_ALLINONE игнорируется
-	                  n); //количество кнопок
-#endif
 }
 
 int DrawMessage(int nType, int n, char *msg, ...)

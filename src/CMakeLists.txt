@@ -37,7 +37,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(LINK_FLAGS "${LINK_FLAGS} /incremental:no /OPT:REF /OPT:ICF /debug /ltcg")
   endif ()
 
-  add_definitions(-DFARAPI3 -DUNICODE -D_UNICODE)
+  add_definitions(-DUNICODE -D_UNICODE)
 
   if (IS_x64_PLATFORM)
     set(CMAKE_RC_FLAGS -D_WIN64)
