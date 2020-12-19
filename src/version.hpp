@@ -8,7 +8,7 @@
 
 #define PLUGIN_VER_MAJOR 1
 #define PLUGIN_VER_MINOR 10
-#define PLUGIN_VER_PATCH 17
+#define PLUGIN_VER_PATCH 18
 #define PLUGIN_DESC L"UnInstall for Far Manager 3" PLATFORM
 #define PLUGIN_NAME L"UnInstall"
 #define PLUGIN_FILENAME L"UnInstall.dll"
