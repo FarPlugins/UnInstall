@@ -5,43 +5,30 @@
 #include <strsafe.h>
 #include "plugin.hpp"
 #include "memory.h"
-#ifndef nullptr
-#define nullptr NULL
-#endif
 #ifndef _ASSERTE
 #define _ASSERTE(x)
 #endif
 #include "DlgBuilder.hpp"
-#include "eplugin.cpp"
+#include "EPlugin.cpp"
 #include "farcolor.hpp"
 #include "farkeys.hpp"
-#include "farlang.h"
-#include "uninstall.hpp"
-
-#  define SetStartupInfo SetStartupInfoW
-#  define GetPluginInfo GetPluginInfoW
-#  define Configure ConfigureW
-
-int WINAPI GetMinFarVersionW(void)
-{
-  #define MAKEFARVERSION_OLD(major,minor,build) ( ((major)<<8) | (minor) | ((build)<<16))
-  
-  return MAKEFARVERSION_OLD(FARMANAGERVERSION_MAJOR,FARMANAGERVERSION_MINOR,FARMANAGERVERSION_BUILD);
-}
+#include "FarLang.h"
+#include "UnInstall.hpp"
+#include "version.hpp"
 
 void WINAPI GetGlobalInfoW(struct GlobalInfo *Info)
 {
 	Info->StructSize = sizeof(GlobalInfo);
-	Info->MinFarVersion = FARMANAGERVERSION;
+	Info->MinFarVersion = MAKEFARVERSION(3, 0, 0, 3192, VS_RELEASE);;
 
-	Info->Version = 	MAKEFARVERSION(1,10,17,0,VS_RELEASE);
+	Info->Version = MAKEFARVERSION(PLUGIN_VER_MAJOR,PLUGIN_VER_MINOR,PLUGIN_VER_PATCH,0,VS_RELEASE);
 	Info->Guid = MainGuid;
 	Info->Title = L"UnInstall";
 	Info->Description = L"UnInstall";
 	Info->Author = L"ConEmu.Maximus5@gmail.com";
 }
 
-void WINAPI SetStartupInfo(const struct PluginStartupInfo *psInfo)
+void WINAPI SetStartupInfoW(const struct PluginStartupInfo *psInfo)
 {
 	Info = *psInfo;
 	FSF = *psInfo->FSF;
@@ -49,7 +36,7 @@ void WINAPI SetStartupInfo(const struct PluginStartupInfo *psInfo)
 	ReadRegistry();
 }
 
-void WINAPI GetPluginInfo(struct PluginInfo *Info)
+void WINAPI GetPluginInfoW(struct PluginInfo *Info)
 {
 	static const TCHAR *PluginMenuStrings[1];
 	PluginMenuStrings[0] = GetMsg(MPlugIn);
@@ -274,12 +261,12 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 					if(ListSize)
 					{
 						TCHAR DlgText[MAX_PATH + 200];
-						StringCchPrintf(DlgText, ARRAYSIZE(DlgText), GetMsg(MConfirm), p[Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,NULL)].Keys[DisplayName]);
+						StringCchPrintf(DlgText, ARRAYSIZE(DlgText), GetMsg(MConfirm), p[Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr)].Keys[DisplayName]);
 
 						if(EMessage((const TCHAR * const *) DlgText, 0, 2) == 0)
 						{
-							if(!DeleteEntry(static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,NULL))))
-								DrawMessage(FMSG_WARNING, 1, "%s",GetMsg(MPlugIn),GetMsg(MDelRegErr),GetMsg(MBtnOk),NULL);
+							if(!DeleteEntry(static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr))))
+								DrawMessage(FMSG_WARNING, 1, "%s",GetMsg(MPlugIn),GetMsg(MDelRegErr),GetMsg(MBtnOk),nullptr);
 
 							Info.SendDlgMessage(hDlg,DMU_UPDATE,1,0);
 						}
@@ -288,7 +275,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 				return TRUE;
 			case VK_F9:
 				{
-					Configure(0);
+					ConfigureW(0);
 				}
 				return TRUE;
 			case VK_RETURN:
@@ -317,7 +304,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 							}else{
 								liAction = Opt.EnterAction;
 							}
-							int pos = (liFirst == -1) ? static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,NULL)) : liFirst;
+							int pos = (liFirst == -1) ? static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr)) : liFirst;
 							liChanged = ExecuteEntry(pos, liAction, (Opt.RunLowPriority!=0));
 						}
 						else
@@ -386,8 +373,8 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 				{
 					if(ListSize)
 					{
-						DisplayEntry(static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,NULL)));
-						Info.SendDlgMessage(hDlg,DM_REDRAW,NULL,NULL);
+						DisplayEntry(static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr)));
+						Info.SendDlgMessage(hDlg,DM_REDRAW,0,nullptr);
 					}
 				}
 				return TRUE;
@@ -512,8 +499,8 @@ HANDLE WINAPI OpenW(const struct OpenInfo *oInfo)
 	ReadRegistry();
 	struct FarDialogItem DialogItems[1];
 	ZeroMemory(DialogItems, sizeof(DialogItems));
-	p = NULL;
-	FLI = NULL;
+	p = nullptr;
+	FLI = nullptr;
 	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 	UpDateInfo();
 	DialogItems[0].Type = DI_LISTBOX;
@@ -533,10 +520,10 @@ HANDLE WINAPI OpenW(const struct OpenInfo *oInfo)
 
 	FLI = (FarListItem *) realloc(FLI, 0);
 	p = (KeyInfo *) realloc(p, 0);
-	return NULL;
+	return nullptr;
 }
 
-intptr_t WINAPI Configure(const struct ConfigureInfo *cInfo)
+intptr_t WINAPI ConfigureW(const struct ConfigureInfo *cInfo)
 {
 	PluginDialogBuilder Config(Info, MainGuid,ConfigGuid, MPlugIn, _T("Configuration"));
 	FarDialogItem *p1, *p2;

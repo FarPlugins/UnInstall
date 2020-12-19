@@ -323,8 +323,8 @@ INT_PTR WINAPI EntryDlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Param
 				MacroSendMacroText msmt;
 				msmt.StructSize= sizeof(MacroSendMacroText);
 				msmt.SequenceText=sMacro;
-				msmt.Flags=KMFLAGS_DISABLEOUTPUT;
-				Info.MacroControl(&MainGuid,MCTL_SENDSTRING, nullptr,&msmt);
+				msmt.Flags=KMFLAGS_NONE;
+				Info.MacroControl(&MainGuid,MCTL_SENDSTRING, 0,&msmt);
 
 				return TRUE;
 			}
@@ -354,7 +354,7 @@ void FillDialog(FarDialogItem & DialogItem,
 	DialogItem.Flags = Flags;
 	DialogItem.Data = s;
 	DialogItem.MaxLength = 0;
-	DialogItem.UserData = nullptr;
+	DialogItem.UserData = 0;
 
 	if(Type == DI_BUTTON)
 	{
