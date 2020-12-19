@@ -1,7 +1,6 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <objbase.h>
-#include <tchar.h>
 #include <strsafe.h>
 #include "plugin.hpp"
 #include "memory.h"
@@ -16,16 +15,15 @@
 #include "UnInstall.hpp"
 #include "version.hpp"
 
-void WINAPI GetGlobalInfoW(struct GlobalInfo *Info)
+void WINAPI GetGlobalInfoW(struct GlobalInfo *gInfo)
 {
-	Info->StructSize = sizeof(GlobalInfo);
-	Info->MinFarVersion = MAKEFARVERSION(3, 0, 0, 3192, VS_RELEASE);;
-
-	Info->Version = MAKEFARVERSION(PLUGIN_VER_MAJOR,PLUGIN_VER_MINOR,PLUGIN_VER_PATCH,0,VS_RELEASE);
-	Info->Guid = MainGuid;
-	Info->Title = L"UnInstall";
-	Info->Description = L"UnInstall";
-	Info->Author = L"ConEmu.Maximus5@gmail.com";
+    gInfo->StructSize = sizeof(GlobalInfo);
+    gInfo->MinFarVersion = MAKEFARVERSION(3, 0, 0, 3192, VS_RELEASE);
+    gInfo->Version = MAKEFARVERSION(PLUGIN_VER_MAJOR,PLUGIN_VER_MINOR,PLUGIN_VER_PATCH,0,VS_RELEASE);
+    gInfo->Guid = MainGuid;
+    gInfo->Title = L"UnInstall";
+    gInfo->Description = L"UnInstall";
+    gInfo->Author = L"ConEmu.Maximus5@gmail.com";
 }
 
 void WINAPI SetStartupInfoW(const struct PluginStartupInfo *psInfo)
@@ -38,7 +36,7 @@ void WINAPI SetStartupInfoW(const struct PluginStartupInfo *psInfo)
 
 void WINAPI GetPluginInfoW(struct PluginInfo *Info)
 {
-	static const TCHAR *PluginMenuStrings[1];
+	static const wchar_t *PluginMenuStrings[1];
 	PluginMenuStrings[0] = GetMsg(MPlugIn);
 	Info -> StructSize = sizeof(*Info);
 
@@ -85,8 +83,8 @@ void ResizeDialog(HANDLE hDlg)
 
 static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Param2)
 {
-	static TCHAR Filter[MAX_PATH];
-	static TCHAR spFilter[MAX_PATH];
+	static wchar_t Filter[MAX_PATH];
+	static wchar_t spFilter[MAX_PATH];
 	static FarListTitles ListTitle;
 
 	INPUT_RECORD* record=nullptr;
@@ -95,14 +93,14 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 	{
 		case DN_RESIZECONSOLE:
 		{
-			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,0);
+			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,nullptr);
 			ResizeDialog(hDlg);
-			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,0);
+			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,nullptr);
 		}
 		return TRUE;
 		case DMU_UPDATE:
 		{
-			int OldPos = static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,0));
+			int OldPos = static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr));
 
 			if(Param1)
 				UpDateInfo();
@@ -118,7 +116,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 
 			for(int i = 0; i < nCount; i++)
 			{
-				const TCHAR* DispName = p[i].Keys[DisplayName], *Find;
+				const wchar_t* DispName = p[i].Keys[DisplayName], *Find;
 
 				if(*Filter)
 					Find = strstri(DispName,Filter);
@@ -178,7 +176,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 				NewPos = OldPos;
 			}
 
-			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,0);
+			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,nullptr);
 			Info.SendDlgMessage(hDlg,DM_LISTSET,LIST_BOX,&FL);
 
 			StringCchPrintf(spFilter,ARRAYSIZE(spFilter), GetMsg(MFilter),Filter,ListSize,nCount);
@@ -188,26 +186,26 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 			Info.SendDlgMessage(hDlg,DM_LISTSETTITLES,LIST_BOX,&ListTitle);
 
 			ResizeDialog(hDlg);
-			struct FarListPos FLP;
+			struct FarListPos FLP{};
 			FLP.SelectPos = NewPos;
 			FLP.TopPos = -1;
 			FLP.StructSize = sizeof(FarListPos);
 			Info.SendDlgMessage(hDlg,DM_LISTSETCURPOS,LIST_BOX,&FLP);
-			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,0);
+			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,nullptr);
 		}
 		break;
 		case DN_INITDIALOG:
 		{
-			StringCchCopy(Filter,ARRAYSIZE(Filter),_T(""));
-			ListTitle.Bottom = const_cast<TCHAR*>(GetMsg(MBottomLine));
+			StringCchCopy(Filter,ARRAYSIZE(Filter),L"");
+			ListTitle.Bottom = const_cast<wchar_t*>(GetMsg(MBottomLine));
 			ListTitle.BottomSize = lstrlen(GetMsg(MBottomLine));
 
             //подстраиваемся под размеры консоли
-			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,0);
+			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,FALSE,nullptr);
 			ResizeDialog(hDlg);
-			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,0);
+			Info.SendDlgMessage(hDlg,DM_ENABLEREDRAW,TRUE,nullptr);
             //заполняем диалог
-			Info.SendDlgMessage(hDlg,DMU_UPDATE,1,0);
+			Info.SendDlgMessage(hDlg,DMU_UPDATE,1,nullptr);
 		}
 		break;
 		case DN_CONTROLINPUT:
@@ -260,22 +258,22 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 				{
 					if(ListSize)
 					{
-						TCHAR DlgText[MAX_PATH + 200];
+						wchar_t DlgText[MAX_PATH + 200];
 						StringCchPrintf(DlgText, ARRAYSIZE(DlgText), GetMsg(MConfirm), p[Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr)].Keys[DisplayName]);
 
-						if(EMessage((const TCHAR * const *) DlgText, 0, 2) == 0)
+						if(EMessage((const wchar_t * const *) DlgText, 0, 2) == 0)
 						{
 							if(!DeleteEntry(static_cast<int>(Info.SendDlgMessage(hDlg,DM_LISTGETCURPOS,LIST_BOX,nullptr))))
 								DrawMessage(FMSG_WARNING, 1, "%s",GetMsg(MPlugIn),GetMsg(MDelRegErr),GetMsg(MBtnOk),nullptr);
 
-							Info.SendDlgMessage(hDlg,DMU_UPDATE,1,0);
+							Info.SendDlgMessage(hDlg,DMU_UPDATE,1,nullptr);
 						}
 					}
 				}
 				return TRUE;
 			case VK_F9:
 				{
-					ConfigureW(0);
+					ConfigureW(nullptr);
 				}
 				return TRUE;
 			case VK_RETURN:
@@ -336,7 +334,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 								if(!(FLI[pos].Flags & LIF_CHECKED))
 									continue;
 
-								struct FarListPos FLP;
+								struct FarListPos FLP{};
 								FLP.SelectPos = pos;
 								FLP.TopPos = -1;
 								FLP.StructSize = sizeof(FarListPos);
@@ -354,7 +352,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 
 						if(liChanged == 1)
 						{
-							Info.SendDlgMessage(hDlg,DMU_UPDATE,1,0);
+							Info.SendDlgMessage(hDlg,DMU_UPDATE,1,nullptr);
 						}
 					}
 				}
@@ -363,8 +361,8 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 				{
 					if(lstrlen(Filter) > 0)
 					{
-						StringCchCopy(Filter,ARRAYSIZE(Filter),_T(""));
-						Info.SendDlgMessage(hDlg,DMU_UPDATE,0,0);
+						StringCchCopy(Filter,ARRAYSIZE(Filter),L"");
+						Info.SendDlgMessage(hDlg,DMU_UPDATE,0,nullptr);
 					}
 				}
 				return TRUE;
@@ -381,7 +379,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 			case VK_F2:
 				{
 					Opt.SortByDate = !Opt.SortByDate;
-					Info.SendDlgMessage(hDlg,DMU_UPDATE,1,0);
+					Info.SendDlgMessage(hDlg,DMU_UPDATE,1,nullptr);
 				}
 				return TRUE;
 			case VK_BACK:
@@ -389,7 +387,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 					if(lstrlen(Filter))
 					{
 						Filter[lstrlen(Filter)-1] = '\0';
-						Info.SendDlgMessage(hDlg,DMU_UPDATE,0,0);
+						Info.SendDlgMessage(hDlg,DMU_UPDATE,0,nullptr);
 					}
 				}
 				return TRUE;
@@ -397,7 +395,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 				{
 					//case KEY_CTRLR:
 					if ((record->Event.KeyEvent.wVirtualKeyCode=='R')&&((record->Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED)||(record->Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED))) {
-						Info.SendDlgMessage(hDlg,DMU_UPDATE,1,0);
+						Info.SendDlgMessage(hDlg,DMU_UPDATE,1,nullptr);
 						return TRUE;
 					}
 					// KEY_INS
@@ -416,9 +414,9 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 							||((record->Event.KeyEvent.wVirtualKeyCode==VK_INSERT)&&(record->Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED))){
 
 
-							static TCHAR bufData[MAX_PATH];
+							static wchar_t bufData[MAX_PATH];
 							size_t size = FSF.PasteFromClipboard(FCT_STREAM,nullptr,0);
-							TCHAR *bufP = new TCHAR[size];
+							wchar_t *bufP = new wchar_t[size];
 							FSF.PasteFromClipboard(FCT_STREAM,bufP,size);
 
 							if(bufP)
@@ -434,7 +432,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 										if(strnstri(p[j].Keys[DisplayName],bufData,i))
 										{
 											lstrcpyn(Filter,bufData,i+1);
-											Info.SendDlgMessage(hDlg,DMU_UPDATE,0,0);
+											Info.SendDlgMessage(hDlg,DMU_UPDATE,0,nullptr);
 											return TRUE;
 										}
 							}
@@ -444,7 +442,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 
 						if(record->Event.KeyEvent.wVirtualKeyCode >= VK_SPACE && record->Event.KeyEvent.wVirtualKeyCode <= VK_DIVIDE && record->Event.KeyEvent.uChar.UnicodeChar!=0)
 						{
-							struct FarListInfo ListInfo;
+							struct FarListInfo ListInfo{};
 							ListInfo.StructSize = sizeof(FarListInfo);
 							Info.SendDlgMessage(hDlg,DM_LISTINFO,LIST_BOX,&ListInfo);
 
@@ -454,7 +452,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 
 								Filter[filterL] = FSF.LLower(record->Event.KeyEvent.uChar.UnicodeChar);
 								Filter[filterL+1] = '\0';
-								Info.SendDlgMessage(hDlg,DMU_UPDATE,0,0);
+								Info.SendDlgMessage(hDlg,DMU_UPDATE,0,nullptr);
 								return TRUE;
 							}
 						}
@@ -481,7 +479,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Par
 					Count = fdic->ColorsCount;
 
 				for(int i = 0; i < Count; i++){
-					FarColor fc;
+					FarColor fc{};
 					if (static_cast<BYTE>(Info.AdvControl(&MainGuid, ACTL_GETCOLOR, ColorIndex[i],&fc))) {
 						Colors[i] = fc;
 					}
@@ -509,7 +507,7 @@ HANDLE WINAPI OpenW(const struct OpenInfo *oInfo)
 	DialogItems[0].X1 = 2;
 	DialogItems[0].Y1 = 1;
 
-	HANDLE h_dlg = Info.DialogInit(&MainGuid,&ContentsGuid,-1,-1,0,0,L"Contents",DialogItems,ARRAYSIZE(DialogItems),0,0,DlgProc,0);
+	HANDLE h_dlg = Info.DialogInit(&MainGuid,&ContentsGuid,-1,-1,0,0,L"Contents",DialogItems,ARRAYSIZE(DialogItems),0,0,DlgProc,nullptr);
 
 	if(h_dlg != INVALID_HANDLE_VALUE)
 	{
@@ -525,7 +523,7 @@ HANDLE WINAPI OpenW(const struct OpenInfo *oInfo)
 
 intptr_t WINAPI ConfigureW(const struct ConfigureInfo *cInfo)
 {
-	PluginDialogBuilder Config(Info, MainGuid,ConfigGuid, MPlugIn, _T("Configuration"));
+	PluginDialogBuilder Config(Info, MainGuid,ConfigGuid, MPlugIn, L"Configuration");
 	FarDialogItem *p1, *p2;
 	BOOL bShowInViewer = (Opt.WhereWork & 1) != 0;
 	BOOL bShowInEditor = (Opt.WhereWork & 2) != 0;
@@ -540,7 +538,7 @@ intptr_t WINAPI ConfigureW(const struct ConfigureInfo *cInfo)
 	Config.AddCheckbox(MLowPriority, &bUseElevation);
 	Config.AddCheckbox(MForceMsiUse, &bForceMsiUse);
 	Config.AddSeparator();
-	FarList AEnter, AShiftEnter;
+	FarList AEnter{}, AShiftEnter{};
 	AEnter.ItemsNumber = AShiftEnter.ItemsNumber = 7;
 	AEnter.Items = (FarListItem*)calloc(AEnter.ItemsNumber,sizeof(FarListItem));
 	AShiftEnter.Items = (FarListItem*)calloc(AEnter.ItemsNumber,sizeof(FarListItem));

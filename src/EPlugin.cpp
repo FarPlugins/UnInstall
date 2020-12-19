@@ -3,17 +3,17 @@
 static struct PluginStartupInfo Info;
 static struct FarStandardFunctions FSF;
 
-const TCHAR* GetMsg(int MsgId)
+const wchar_t* GetMsg(int MsgId)
 {
 	return(Info.GetMsg(&MainGuid,MsgId));
 }
 
-void ShowHelp(const TCHAR * HelpTopic)
+void ShowHelp(const wchar_t * HelpTopic)
 {
 	Info.ShowHelp(Info.ModuleName,HelpTopic,0);
 }
 
-int EMessage(const TCHAR * const * s, int nType, int n)
+int EMessage(const wchar_t * const * s, int nType, int n)
 {
 	return Info.Message(&MainGuid, &AnyMessage, FMSG_ALLINONE|nType, NULL, s,
 	                    0, //этот параметр при FMSG_ALLINONE игнорируется
@@ -23,42 +23,42 @@ int EMessage(const TCHAR * const * s, int nType, int n)
 int DrawMessage(int nType, int n, char *msg, ...)
 {
 	int total = 0;
-	TCHAR * string = NULL;
+	wchar_t * string = NULL;
 	va_list ap;
-	TCHAR * arg;
+	wchar_t * arg;
 	va_start(ap, msg);
 
-	while((arg = va_arg(ap,TCHAR*))!= 0)
+	while((arg = va_arg(ap,wchar_t*))!= 0)
 	{
 		total += lstrlen(arg) + 1; //мы еще будем записывать символ перевода строки
 	}
 
 	va_end(ap);
 	total--; //последний знак перевода строки мы сотрем
-	string = (TCHAR *) realloc(string, sizeof(TCHAR)*(total + 1));
-	string[0]=_T('\0');
+	string = (wchar_t *) realloc(string, sizeof(wchar_t)*(total + 1));
+	string[0]=L'\0';
 	va_start(ap, msg);
 
-	while((arg = va_arg(ap,TCHAR*))!= NULL)
+	while((arg = va_arg(ap,wchar_t*))!= NULL)
 	{
 		StringCchCat(string, total+1, arg);
-		StringCchCat(string, total+1, _T("\n"));
+		StringCchCat(string, total+1, L"\n");
 	}
 
 	va_end(ap);
-	string[total]=_T('\0');
-	int result = EMessage((const TCHAR * const *) string, nType, n);
+	string[total]=L'\0';
+	int result = EMessage((const wchar_t * const *) string, nType, n);
 	realloc(string, 0);
 	return result;
 }
 
-const TCHAR * strstri(const TCHAR *s, const TCHAR *c)
+const wchar_t * strstri(const wchar_t *s, const wchar_t *c)
 {
 	if(c)
 	{
 		int l = lstrlen(c);
 
-		for(const TCHAR *p = s ; *p ; p++)
+		for(const wchar_t *p = s ; *p ; p++)
 			if(FSF.LStrnicmp(p, c, l) == 0)
 				return p;
 	}
@@ -66,13 +66,13 @@ const TCHAR * strstri(const TCHAR *s, const TCHAR *c)
 	return NULL;
 }
 
-TCHAR * strnstri(TCHAR *s, const TCHAR *c, int n)
+wchar_t * strnstri(wchar_t *s, const wchar_t *c, int n)
 {
 	if(c)
 	{
 		int l = min(lstrlen(c), n);
 
-		for(TCHAR *p = s ; *p ; p++)
+		for(wchar_t *p = s ; *p ; p++)
 			if(FSF.LStrnicmp(p, c, l) == 0)
 				return p;
 	}
@@ -80,18 +80,18 @@ TCHAR * strnstri(TCHAR *s, const TCHAR *c, int n)
 	return NULL;
 }
 
-TCHAR * unQuote(TCHAR *vStr)
+wchar_t * unQuote(wchar_t *vStr)
 {
 	unsigned l;
 	l = lstrlen(vStr);
 
-	if(*vStr == _T('\"'))
-		memmove(vStr,vStr+1,l*sizeof(TCHAR));
+	if(*vStr == L'\"')
+		memmove(vStr,vStr+1,l*sizeof(wchar_t));
 
 	l = lstrlen(vStr);
 
-	if(vStr[l-1] == _T('\"'))
-		vStr[l-1] = _T('\0');
+	if(vStr[l-1] == L'\"')
+		vStr[l-1] = L'\0';
 
 	return(vStr);
 }

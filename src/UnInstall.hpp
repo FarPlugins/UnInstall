@@ -2,25 +2,25 @@
 #include "PluginSettings.hpp"
 
 //дополнительные описания к ключам
-const TCHAR *HelpTopics[] =
+const wchar_t *HelpTopics[] =
 {
-	_T("DisplayName"),
-	_T(""),
-	_T("InstallLocation"),
-	_T("ModifyPath"),
-	_T("UninstallString"),
-	_T("Publisher"),
-	_T("URLInfoAbout"),
-	_T("URLUpdateInfo"),
-	_T("Comments"),
-	_T("DisplayVersion"),
-	_T("InstallDate") // Must be last item!
+	L"DisplayName",
+	L"",
+	L"InstallLocation",
+	L"ModifyPath",
+	L"UninstallString",
+	L"Publisher",
+	L"URLInfoAbout",
+	L"URLUpdateInfo",
+	L"Comments",
+	L"DisplayVersion",
+	L"InstallDate" // Must be last item!
 };
 
-const TCHAR *HiddenPrefixes[] =
+const wchar_t *HiddenPrefixes[] =
 {
-	_T("InstallWIX_{"),
-	_T("InstallShield_{")
+	L"InstallWIX_{",
+	L"InstallShield_{"
 };
 
 enum
@@ -69,11 +69,11 @@ const int KeysCount = ARRAYSIZE(HelpTopics);
 struct RegKeyPath
 {
 	HKEY Root;
-	const TCHAR* Path;
+	const wchar_t* Path;
 } UninstKeys[] =
 {
-	{ HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall") },
-	{ HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall") },
+	{ HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall" },
+	{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall" },
 };
 int nCount; // сколько всего элементов
 int nRealCount; // сколько выделено памяти
@@ -96,22 +96,22 @@ struct Options
 
 struct KeyInfo
 {
-	TCHAR Keys[KeysCount][MAX_PATH];
-	TCHAR ListItem[MAX_PATH];
+	wchar_t Keys[KeysCount][MAX_PATH];
+	wchar_t ListItem[MAX_PATH];
 	bool Avail[KeysCount];
 	RegKeyPath RegKey;
 	FILETIME RegTime;
-	TCHAR InstDate[10];
+	wchar_t InstDate[10];
 	DWORD InstDateN;
 	REGSAM RegView;
-	TCHAR SubKeyName[MAX_PATH];
+	wchar_t SubKeyName[MAX_PATH];
 	bool WindowsInstaller;
 	bool Hidden;
 	bool NoModify, NoRepair;
 	bool CanModify, CanRepair;
 } *p = NULL;
 
-bool ValidGuid(const TCHAR* guid)
+bool ValidGuid(const wchar_t* guid)
 {
 	const unsigned c_max_guid_len = 38;
 	wchar_t buf[c_max_guid_len + 1];
@@ -125,11 +125,11 @@ bool ValidGuid(const TCHAR* guid)
 }
 
 //чтение реестра
-bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
+bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 {
 	HKEY userKey;
 	DWORD regType;
-	TCHAR fullN[MAX_PATH*2], *pszNamePtr;
+	wchar_t fullN[MAX_PATH*2], *pszNamePtr;
 	LONG ExitCode;
 	DWORD bufSize, dwTest;
 	memset(&key, 0, sizeof(key));
@@ -137,8 +137,8 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 	key.RegView = RegView;
 	StringCchCopy(key.SubKeyName,ARRAYSIZE(key.SubKeyName),Buf);
 	StringCchCopy(fullN,ARRAYSIZE(fullN),key.RegKey.Path);
-	StringCchCat(fullN,ARRAYSIZE(fullN),_T("\\"));
-	pszNamePtr = fullN + _tcslen(fullN);
+	StringCchCat(fullN,ARRAYSIZE(fullN),L"\\");
+	pszNamePtr = fullN + wcslen(fullN);
 	StringCchCat(fullN,ARRAYSIZE(fullN),key.SubKeyName);
 
 	if(RegOpenKeyEx(key.RegKey.Root, fullN, 0, KEY_READ | RegView, &userKey) != ERROR_SUCCESS)
@@ -149,7 +149,7 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 	{
 		int nPrefixLen = lstrlen(HiddenPrefixes[h]);
 
-		if(memcmp(key.SubKeyName, HiddenPrefixes[h], nPrefixLen*sizeof(TCHAR)) == 0
+		if(memcmp(key.SubKeyName, HiddenPrefixes[h], nPrefixLen*sizeof(wchar_t)) == 0
 		        && ValidGuid(key.SubKeyName+nPrefixLen-1))
 		{
 			// Это может быть "ссылка" на гуид продукта
@@ -165,10 +165,10 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 		}
 	}
 
-	key.WindowsInstaller = (RegQueryValueEx(userKey,_T("WindowsInstaller"),0,NULL,NULL,NULL) == ERROR_SUCCESS) && ValidGuid(key.SubKeyName);
-	key.NoModify = (RegQueryValueEx(userKey,_T("NoModify"),0,NULL,(LPBYTE)&dwTest,&(bufSize)) == ERROR_SUCCESS) && (dwTest!=0);
-	key.NoRepair = (RegQueryValueEx(userKey,_T("NoRepair"),0,NULL,(LPBYTE)&dwTest,&(bufSize)) == ERROR_SUCCESS) && (dwTest!=0);
-	TCHAR sKeyTime[64]; int nKeyTimeLen;
+	key.WindowsInstaller = (RegQueryValueEx(userKey,L"WindowsInstaller",0,NULL,NULL,NULL) == ERROR_SUCCESS) && ValidGuid(key.SubKeyName);
+	key.NoModify = (RegQueryValueEx(userKey,L"NoModify",0,NULL,(LPBYTE)&dwTest,&(bufSize)) == ERROR_SUCCESS) && (dwTest!=0);
+	key.NoRepair = (RegQueryValueEx(userKey,L"NoRepair",0,NULL,(LPBYTE)&dwTest,&(bufSize)) == ERROR_SUCCESS) && (dwTest!=0);
+	wchar_t sKeyTime[64]; int nKeyTimeLen;
 
 	if(RegQueryInfoKey(userKey,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&key.RegTime) != ERROR_SUCCESS)
 	{
@@ -181,15 +181,15 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 		SYSTEMTIME st; FILETIME ft;
 		FileTimeToLocalFileTime(&key.RegTime, &ft);
 		FileTimeToSystemTime(&ft, &st);
-		StringCchPrintf(sKeyTime, ARRAYSIZE(sKeyTime), _T(" / %02u.%02u.%04u %u:%02u:%02u"), st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wSecond);
-		StringCchPrintf(key.InstDate, ARRAYSIZE(key.InstDate), _T("%02u.%02u.%02u"), st.wDay, st.wMonth, (st.wYear % 100));
+		StringCchPrintf(sKeyTime, ARRAYSIZE(sKeyTime), L" / %02u.%02u.%04u %u:%02u:%02u", st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wSecond);
+		StringCchPrintf(key.InstDate, ARRAYSIZE(key.InstDate), L"%02u.%02u.%02u", st.wDay, st.wMonth, (st.wYear % 100));
 		key.InstDateN = ((st.wYear & 0xFFFF) << 16) | ((st.wMonth & 0xFF) << 8) | (st.wDay & 0xFF);
 		nKeyTimeLen = lstrlen(sKeyTime) + 1;
 	}
 
 	for(int i=0; i<KeysCount; i++)
 	{
-		bufSize = MAX_PATH * sizeof(TCHAR);
+		bufSize = MAX_PATH * sizeof(wchar_t);
 
 		if(HelpTopics[i][0] == 0)
 		{
@@ -197,14 +197,14 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 
 			if(RegView)
 			{
-				StringCchPrintf(key.Keys[i], ARRAYSIZE(key.Keys[i]), _T("%s[%u]\\...\\"),
-				                (RegKey.Root == HKEY_LOCAL_MACHINE) ? _T("HKLM") : _T("HKCU"),
+				StringCchPrintf(key.Keys[i], ARRAYSIZE(key.Keys[i]), L"%s[%u]\\...\\",
+				                (RegKey.Root == HKEY_LOCAL_MACHINE) ? L"HKLM" : L"HKCU",
 				                (RegView == KEY_WOW64_64KEY) ? 64 : 32);
 			}
 			else
 			{
-				StringCchPrintf(key.Keys[i], ARRAYSIZE(key.Keys[i]), _T("%s\\...\\"),
-				                (RegKey.Root == HKEY_LOCAL_MACHINE) ? _T("HKLM") : _T("HKCU"));
+				StringCchPrintf(key.Keys[i], ARRAYSIZE(key.Keys[i]), L"%s\\...\\",
+				                (RegKey.Root == HKEY_LOCAL_MACHINE) ? L"HKLM" : L"HKCU");
 			}
 
 			int nRootLen = lstrlen(key.Keys[i]);
@@ -215,14 +215,14 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 			if(i == ModifyPath && key.NoModify)
 				continue;
 
-			if(i == InstallDate) bufSize -= nKeyTimeLen * sizeof(TCHAR);
+			if(i == InstallDate) bufSize -= nKeyTimeLen * sizeof(wchar_t);
 
 			ExitCode = RegQueryValueEx(userKey,HelpTopics[i],0,&regType,(LPBYTE)key.Keys[i],&bufSize);
 		}
 
 		key.Keys[i][ARRAYSIZE(key.Keys[i]) - 1] = 0;
 
-		if(ExitCode != ERROR_SUCCESS || lstrcmp(key.Keys[i],_T("")) == 0)
+		if(ExitCode != ERROR_SUCCESS || lstrcmp(key.Keys[i],L"") == 0)
 		{
 			if((i == UninstallString && !key.WindowsInstaller) || i == DisplayName)
 			{
@@ -237,7 +237,7 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 			}
 			else
 			{
-				StringCchCopy(key.Keys[i],ARRAYSIZE(key.Keys[i]),_T(""));
+				StringCchCopy(key.Keys[i],ARRAYSIZE(key.Keys[i]),L"");
 				key.Avail[i] = FALSE;
 			}
 		}
@@ -250,8 +250,8 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 				// 20101105
 				if(lstrlen(key.Keys[i]) == 8)
 				{
-					TCHAR *pszEnd = 0;
-					DWORD ulDate = _tcstoul(key.Keys[i], &pszEnd, 10);
+					wchar_t *pszEnd = 0;
+					DWORD ulDate = wcstoul(key.Keys[i], &pszEnd, 10);
 
 					if(ulDate)
 					{
@@ -260,7 +260,7 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 
 						if(ulDate && nMon && nDay)
 						{
-							StringCchPrintf(key.InstDate, ARRAYSIZE(key.InstDate), _T("%02u.%02u.%02u"), nDay, nMon, (ulDate % 100));
+							StringCchPrintf(key.InstDate, ARRAYSIZE(key.InstDate), L"%02u.%02u.%02u", nDay, nMon, (ulDate % 100));
 							key.InstDateN = ((ulDate & 0xFFFF) << 16) | ((nMon & 0xFF) << 8) | (nDay & 0xFF);
 						}
 					}
@@ -280,7 +280,7 @@ bool FillReg(KeyInfo& key, TCHAR* Buf, RegKeyPath& RegKey, REGSAM RegView)
 	}
 
 	if(key.InstDate[0] == 0)
-		StringCchCopy(key.InstDate, ARRAYSIZE(key.InstDate), _T("        "));
+		StringCchCopy(key.InstDate, ARRAYSIZE(key.InstDate), L"        ");
 
 	if(key.WindowsInstaller)
 	{
@@ -314,13 +314,13 @@ INT_PTR WINAPI EntryDlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Param
 			INPUT_RECORD* record=(INPUT_RECORD *)Param2;
 			if((record->EventType==KEY_EVENT)&&((record->Event.KeyEvent.wVirtualKeyCode == VK_PRIOR) || (record->Event.KeyEvent.wVirtualKeyCode == VK_NEXT)))
 			{
-				TCHAR sMacro[32];
+				wchar_t sMacro[32];
 				if(record->Event.KeyEvent.wVirtualKeyCode == VK_PRIOR)
-					StringCchCopy(sMacro, ARRAYSIZE(sMacro), _T("Esc Up F3"));
+					StringCchCopy(sMacro, ARRAYSIZE(sMacro), L"Esc Up F3");
 				else
-					StringCchCopy(sMacro, ARRAYSIZE(sMacro), _T("Esc Down F3"));
+					StringCchCopy(sMacro, ARRAYSIZE(sMacro), L"Esc Down F3");
 
-				MacroSendMacroText msmt;
+				MacroSendMacroText msmt{};
 				msmt.StructSize= sizeof(MacroSendMacroText);
 				msmt.SequenceText=sMacro;
 				msmt.Flags=KMFLAGS_NONE;
@@ -341,7 +341,7 @@ void FillDialog(FarDialogItem & DialogItem,
 	FARDIALOGITEMTYPES Type,
 	int X1, int Y1, int X2, int Y2, int Flags, int nData)
 {
-	const TCHAR* s = nData != -1 ? GetMsg(nData) : _T("");
+	const wchar_t* s = nData != -1 ? GetMsg(nData) : L"";
 
 	DialogItem.Type = Type;
 	DialogItem.X1 = X1;
@@ -418,7 +418,7 @@ void DisplayEntry(int Sel)
 	}
 
 	FillDialog(DialogItems[0], DI_DOUBLEBOX, 3, 1, sx + 4, sy + 2, 0, p[Sel].WindowsInstaller ? MUninstallEntryMSI : MUninstallEntry);
-	HANDLE h_dlg = Info.DialogInit(&MainGuid,&UninstallEntryGuid, -1, -1, sx + 8, sy + 4, _T("UninstallEntry"), DialogItems, di_cnt, 0, 0, EntryDlgProc, 0);
+	HANDLE h_dlg = Info.DialogInit(&MainGuid,&UninstallEntryGuid, -1, -1, sx + 8, sy + 4, L"UninstallEntry", DialogItems, di_cnt, 0, 0, EntryDlgProc, 0);
 
 	if(h_dlg != INVALID_HANDLE_VALUE)
 	{
@@ -550,29 +550,29 @@ BOOL IsFilePath(LPCWSTR asFilePath, bool abCheckFileExist)
 	return TRUE;
 }
 
-BOOL FirstArg(LPCTSTR asCmdLine, TCHAR* rsArg/*[MAX_PATH+1]*/, LPCTSTR* rsNextArg)
+BOOL FirstArg(LPCTSTR asCmdLine, wchar_t* rsArg/*[MAX_PATH+1]*/, LPCTSTR* rsNextArg)
 {
 	LPCTSTR psCmdLine = asCmdLine;
 	LPCTSTR pch = NULL;
-	TCHAR ch = *psCmdLine;
+	wchar_t ch = *psCmdLine;
 	size_t nArgLen = 0;
 
-	while(ch == _T(' ') || ch == _T('\t') || ch == _T('\r') || ch == _T('\n')) ch = *(++psCmdLine);
+	while(ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n') ch = *(++psCmdLine);
 
 	if(ch == 0) return FALSE;
 
 	// аргумент начинается с "
-	if(ch == _T('"'))
+	if(ch == L'"')
 	{
 		psCmdLine++;
-		pch = wcschr(psCmdLine, _T('"'));
+		pch = wcschr(psCmdLine, L'"');
 
 		if(!pch) return FALSE;
 
-		while(pch[1] == _T('"'))
+		while(pch[1] == L'"')
 		{
 			pch += 2;
-			pch = wcschr(pch, _T('"'));
+			pch = wcschr(pch, L'"');
 
 			if(!pch) return FALSE;
 		}
@@ -582,12 +582,12 @@ BOOL FirstArg(LPCTSTR asCmdLine, TCHAR* rsArg/*[MAX_PATH+1]*/, LPCTSTR* rsNextAr
 	else
 	{
 		// До конца строки или до первого пробела
-		//pch = wcschr(psCmdLine, _T(' '));
+		//pch = wcschr(psCmdLine, L' '));
 		// 09.06.2009 Maks - обломался на: cmd /c" echo Y "
 		pch = psCmdLine;
 
 		// Ищем обычным образом (до пробела/кавычки)
-		while(*pch && *pch!=_T(' ') && *pch!=_T('"')) pch++;
+		while(*pch && *pch!=L' ' && *pch!=L'"') pch++;
 
 		//if (!pch) pch = psCmdLine + lstrlenW(psCmdLine); // до конца строки
 	}
@@ -597,7 +597,7 @@ BOOL FirstArg(LPCTSTR asCmdLine, TCHAR* rsArg/*[MAX_PATH+1]*/, LPCTSTR* rsNextAr
 	if(nArgLen > MAX_PATH) return FALSE;
 
 	// Вернуть аргумент
-	memcpy(rsArg, psCmdLine, nArgLen*sizeof(TCHAR));
+	memcpy(rsArg, psCmdLine, nArgLen*sizeof(wchar_t));
 	rsArg[nArgLen] = 0;
 	psCmdLine = pch;
 	// Finalize
@@ -651,7 +651,7 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 	intptr_t BreakCode;
 	struct FarKey BreakKeys[1]= {VK_F7,0};
 
-	TCHAR szMenuTitle[MAX_PATH];
+	wchar_t szMenuTitle[MAX_PATH];
 
 	if(nChkCount > 1)
 		StringCchPrintf(szMenuTitle, ARRAYSIZE(szMenuTitle), GetMsg(MMenuTopLineN), nChkCount);
@@ -663,7 +663,7 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 
 		iRc = Info.Menu(&MainGuid,&ActionMenu, -1,-1,0, FMENU_WRAPMODE, szMenuTitle,
 		                GetMsg(LowPriority ? MMenuBottomLine2 : MMenuBottomLine1),
-		                _T("ActionMenu"), BreakKeys, &BreakCode, (struct FarMenuItem *)items, ARRAYSIZE(items));
+		                L"ActionMenu", BreakKeys, &BreakCode, (struct FarMenuItem *)items, ARRAYSIZE(items));
 
 		if(iRc < 0)
 			return -1;
@@ -711,7 +711,7 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
-	TCHAR cmd_line[MAX_PATH*2+1], cmd_file[MAX_PATH+1], cmd_parm[MAX_PATH*2+1];
+	wchar_t cmd_line[MAX_PATH*2+1], cmd_file[MAX_PATH+1], cmd_parm[MAX_PATH*2+1];
 	LPCTSTR pszString = NULL;
 
 	if((Action == Action_ModifyWait) || (Action == Action_Modify))
@@ -729,32 +729,32 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 
 	if(p[Sel].WindowsInstaller && !(!Opt.ForceMsiUse && pszString))
 	{
-		TCHAR szCode[6];
+		wchar_t szCode[6];
 
 		if((Action == Action_UninstallWait) || (Action == Action_Uninstall))
-			StringCchCopy(szCode, ARRAYSIZE(szCode), _T(" /x "));
+			StringCchCopy(szCode, ARRAYSIZE(szCode), L" /x ");
 		else if((Action == Action_RepairWait) || (Action == Action_Repair))
-			StringCchCopy(szCode, ARRAYSIZE(szCode), _T(" /fa "));
+			StringCchCopy(szCode, ARRAYSIZE(szCode), L" /fa ");
 		else //if ((Action == Action_ModifyWait) || (Action == Action_Modify))
-			StringCchCopy(szCode, ARRAYSIZE(szCode), _T(" /i "));
+			StringCchCopy(szCode, ARRAYSIZE(szCode), L" /i ");
 
 		// Для CreateProcess
-		StringCchCopy(cmd_line, ARRAYSIZE(cmd_line), _T("msiexec"));
+		StringCchCopy(cmd_line, ARRAYSIZE(cmd_line), L"msiexec");
 		StringCchCat(cmd_line, ARRAYSIZE(cmd_line), szCode);
 		StringCchCat(cmd_line, ARRAYSIZE(cmd_line), p[Sel].SubKeyName);
 
 		// Для ShellExecuteEx
 		if(LowPriority)
 		{
-			StringCchCopy(cmd_file, ARRAYSIZE(cmd_parm), _T("cmd"));
-			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), _T("/c start /low "));
-			StringCchCat(cmd_parm, ARRAYSIZE(cmd_parm), _T("msiexec"));
+			StringCchCopy(cmd_file, ARRAYSIZE(cmd_parm), L"cmd");
+			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), L"/c start /low ");
+			StringCchCat(cmd_parm, ARRAYSIZE(cmd_parm), L"msiexec");
 			StringCchCat(cmd_parm, ARRAYSIZE(cmd_parm), szCode);
 			StringCchCat(cmd_parm, ARRAYSIZE(cmd_parm), p[Sel].SubKeyName);
 		}
 		else
 		{
-			StringCchCopy(cmd_file, ARRAYSIZE(cmd_file), _T("msiexec"));
+			StringCchCopy(cmd_file, ARRAYSIZE(cmd_file), L"msiexec");
 			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), szCode);
 			StringCchCat(cmd_parm, ARRAYSIZE(cmd_parm), p[Sel].SubKeyName);
 		}
@@ -770,8 +770,8 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 		// Для ShellExecuteEx
 		if(LowPriority)
 		{
-			StringCchCopy(cmd_file, ARRAYSIZE(cmd_parm), _T("cmd"));
-			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), _T("/c start /low \"\" "));
+			StringCchCopy(cmd_file, ARRAYSIZE(cmd_parm), L"cmd");
+			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), L"/c start /low \"\" ");
 			StringCchCat(cmd_parm, ARRAYSIZE(cmd_parm), pszString);
 		}
 		else
@@ -804,7 +804,7 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 		// Required elevation
 		SHELLEXECUTEINFO sei = {sizeof(SHELLEXECUTEINFO)};
 		sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-		sei.lpVerb = _T("runas");
+		sei.lpVerb = L"runas";
 		sei.lpFile = cmd_file;
 		sei.lpParameters = cmd_parm;
 		sei.nShow = LowPriority ? SW_MINIMIZE : SW_SHOWNORMAL;
@@ -846,7 +846,7 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 			// Required elevation
 			SHELLEXECUTEINFO sei = {sizeof(SHELLEXECUTEINFO)};
 			sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-			sei.lpVerb = _T("runas");
+			sei.lpVerb = L"runas";
 			sei.lpFile = cmd_file;
 			sei.lpParameters = cmd_parm;
 			sei.nShow = LowPriority ? SW_MINIMIZE : SW_SHOWNORMAL;
@@ -860,13 +860,13 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 
 		if(!ifCreate)  //not Create
 		{
-			TCHAR szErrCode[32];
-			const TCHAR *pszErrInfo = szErrCode;
+			wchar_t szErrCode[32];
+			const wchar_t *pszErrInfo = szErrCode;
 
 			if(dwErr == 0x000004C7)
 				pszErrInfo = GetMsg(MCancelledByUser);
 			else
-				StringCchPrintf(szErrCode, ARRAYSIZE(szErrCode), _T("ErrorCode=0x%08X"), dwErr);
+				StringCchPrintf(szErrCode, ARRAYSIZE(szErrCode), L"ErrorCode=0x%08X", dwErr);
 
 			if(hScreen)
 				Info.RestoreScreen(hScreen);
@@ -882,7 +882,7 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 	//  bPriorityChanged = SetPriorityClass(pi.hProcess, IDLE_PRIORITY_CLASS);
 	//  dwErr = GetLastError();
 	//}
-	TCHAR SaveTitle[MAX_PATH];
+	wchar_t SaveTitle[MAX_PATH];
 	GetConsoleTitle(SaveTitle,ARRAYSIZE(SaveTitle));
 	SaveTitle[ARRAYSIZE(SaveTitle) - 1] = 0;
 	SetConsoleTitle(cmd_line);
@@ -933,7 +933,7 @@ typedef WINADVAPI LSTATUS(APIENTRY *FRegDeleteKeyExW)(__in HKEY hKey, __in LPCWS
 
 bool DeleteEntry(int Sel)
 {
-	HMODULE h_mod = LoadLibrary(_T("advapi32.dll"));
+	HMODULE h_mod = LoadLibrary(L"advapi32.dll");
 	FRegDeleteKeyExA RegDeleteKeyExA = reinterpret_cast<FRegDeleteKeyExA>(GetProcAddress(h_mod, "RegDeleteKeyExA"));
 	FRegDeleteKeyExW RegDeleteKeyExW = reinterpret_cast<FRegDeleteKeyExW>(GetProcAddress(h_mod, "RegDeleteKeyExW"));
 	FreeLibrary(h_mod);
@@ -984,7 +984,7 @@ void EnumKeys(RegKeyPath& RegKey, REGSAM RegView = 0)
 	if(RegQueryInfoKey(hKey,NULL,NULL,NULL,&cSubKeys,NULL,NULL,NULL,NULL,NULL,NULL,NULL) != ERROR_SUCCESS)
 		return;
 
-	TCHAR Buf[MAX_PATH];
+	wchar_t Buf[MAX_PATH];
 
 	for(DWORD fEnumIndex=0; fEnumIndex<cSubKeys; fEnumIndex++)
 	{
@@ -1012,11 +1012,11 @@ void EnumKeys(RegKeyPath& RegKey, REGSAM RegView = 0)
 
 typedef WINBASEAPI VOID (WINAPI *FGetNativeSystemInfo)(__out LPSYSTEM_INFO lpSystemInfo);
 
-#define EMPTYSTR _T("  ")
+#define EMPTYSTR L"  "
 //Обновление информации
 void UpDateInfo(void)
 {
-	HMODULE h_mod = LoadLibrary(_T("kernel32.dll"));
+	HMODULE h_mod = LoadLibrary(L"kernel32.dll");
 	FGetNativeSystemInfo GetNativeSystemInfo = reinterpret_cast<FGetNativeSystemInfo>(GetProcAddress(h_mod, "GetNativeSystemInfo"));
 	FreeLibrary(h_mod);
 	bool is_os_x64 = false;
@@ -1056,19 +1056,19 @@ void UpDateInfo(void)
 	FL.Items = FLI;
 	FL.StructSize = sizeof (FarList);
 
-	const TCHAR* sx86 = GetMsg(MListHKLMx86);
-	const TCHAR* sx64 = GetMsg(MListHKLMx64);
-	const TCHAR* sHKLM = GetMsg(MListHKLM);
-	const TCHAR* sHKCU = GetMsg(MListHKCU);
-	//const TCHAR* sMSI = GetMsg(MListMSI);
+	const wchar_t* sx86 = GetMsg(MListHKLMx86);
+	const wchar_t* sx64 = GetMsg(MListHKLMx64);
+	const wchar_t* sHKLM = GetMsg(MListHKLM);
+	const wchar_t* sHKCU = GetMsg(MListHKCU);
+	//const wchar_t* sMSI = GetMsg(MListMSI);
 	//size_t nLen = _tcslen(sMSI);
-	//TCHAR* sMSI0 = (TCHAR*)malloc((nLen+1)*sizeof(TCHAR));
-	//for (size_t n=0; n<nLen; n++) sMSI0[n] = _T(' ');
+	//wchar_t* sMSI0 = (wchar_t*)malloc((nLen+1)*sizeof(wchar_t));
+	//for (size_t n=0; n<nLen; n++) sMSI0[n] = L' ';
 	//sMSI0[nLen] = 0;
-	TCHAR FirstChar[4];
-	FirstChar[0] = _T('&');
+	wchar_t FirstChar[4];
+	FirstChar[0] = L'&';
 	FirstChar[1] = 0;
-	FirstChar[2] = _T(' ');
+	FirstChar[2] = L' ';
 	FirstChar[3] = 0;
 
 	for(int i=0; i<nCount; i++)
@@ -1076,7 +1076,7 @@ void UpDateInfo(void)
 		size_t MaxSize = ARRAYSIZE(p[i].ListItem);
 		FLI[i].Text = p[i].ListItem;
 
-		TCHAR* text = const_cast<TCHAR*>(FLI[i].Text);
+		wchar_t* text = const_cast<wchar_t*>(FLI[i].Text);
 
 		if(FirstChar[1] != FSF.LUpper(p[i].Keys[DisplayName][0]))
 		{
@@ -1096,20 +1096,20 @@ void UpDateInfo(void)
 		else
 			StringCchCat(text, MaxSize, sHKCU);
 
-		StringCchCat(text, MaxSize, _T(" "));
+		StringCchCat(text, MaxSize, L" ");
 		StringCchCat(text, MaxSize, p[i].InstDate);
-		StringCchCat(text, MaxSize, _T(" "));
-		StringCchCat(text, MaxSize, (p[i].WindowsInstaller) ? _T("W") : _T(" "));
-		StringCchCat(text, MaxSize, (p[i].CanModify) ? _T("M") : _T(" "));
-		StringCchCat(text, MaxSize, (p[i].CanRepair) ? _T("R") : _T(" "));
-		StringCchCat(text, MaxSize, (p[i].Hidden) ? _T("-") : _T(" "));
-		StringCchCat(text, MaxSize, _T(" "));
+		StringCchCat(text, MaxSize, L" ");
+		StringCchCat(text, MaxSize, (p[i].WindowsInstaller) ? L"W" : L" ");
+		StringCchCat(text, MaxSize, (p[i].CanModify) ? L"M" : L" ");
+		StringCchCat(text, MaxSize, (p[i].CanRepair) ? L"R" : L" ");
+		StringCchCat(text, MaxSize, (p[i].Hidden) ? L"-" : L" ");
+		StringCchCat(text, MaxSize, L" ");
 		//if ((p[i].Keys[ModifyPath][0] == 0) && (p[i].Keys[UninstallString][0] == 0))
 		//if (p[i].Hidden)
-		//  StringCchCat(text, MaxSize, _T(" - "));
+		//  StringCchCat(text, MaxSize, L" - "));
 		//else
-		//  StringCchCat(text, MaxSize, _T("   "));
-		size_t nCurLen = _tcslen(text);
+		//  StringCchCat(text, MaxSize, L"   "));
+		size_t nCurLen = wcslen(text);
 		//StringCchCat(text, MaxSize, p[i].Keys[DisplayName]);
 		StringCchCopyN(text+nCurLen, MaxSize-nCurLen, p[i].Keys[DisplayName], MaxSize-nCurLen-1);
 		text[MaxSize-1] = 0;
