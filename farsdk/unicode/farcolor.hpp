@@ -1,16 +1,15 @@
+﻿#ifndef FARCOLOR_HPP_57151931_4591_44A5_92CF_8E51D1FBC57E
+#define FARCOLOR_HPP_57151931_4591_44A5_92CF_8E51D1FBC57E
 #pragma once
-#ifndef __COLORS_HPP__
-#define __COLORS_HPP__
-/*
-  farcolor.hpp
 
-  Colors Index for FAR Manager 2.0 build 1420
-  HKCU\Software\Far\Colors\CurrentPalette
+/*
+farcolor.hpp
+
+Colors Index for FAR Manager 3.0 build 5655
 */
-
 /*
-Copyright (c) 1996 Eugene Roshal
-Copyright (c) 2000 Far Group
+Copyright © 1996 Eugene Roshal
+Copyright © 2000 Far Group
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,6 +38,7 @@ EXCEPTION:
 Far Manager plugins that use this header file can be distributed under any
 other possible license with no implications from the above license on them.
 */
+
 
 
 enum PaletteColors
@@ -127,8 +127,6 @@ enum PaletteColors
 	COL_COMMANDLINESELECTED,
 	COL_VIEWERARROWS,
 
-	COL_RESERVED0,
-
 	COL_DIALOGLISTSCROLLBAR,
 	COL_MENUSCROLLBAR,
 	COL_VIEWERSCROLLBAR,
@@ -206,7 +204,16 @@ enum PaletteColors
 	COL_WARNDIALOGLISTGRAY,
 	COL_WARNDIALOGLISTSELECTEDGRAYTEXT,
 
+	COL_DIALOGDEFAULTBUTTON,
+	COL_DIALOGSELECTEDDEFAULTBUTTON,
+	COL_DIALOGHIGHLIGHTDEFAULTBUTTON,
+	COL_DIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON,
+	COL_WARNDIALOGDEFAULTBUTTON,
+	COL_WARNDIALOGSELECTEDDEFAULTBUTTON,
+	COL_WARNDIALOGHIGHLIGHTDEFAULTBUTTON,
+	COL_WARNDIALOGHIGHLIGHTSELECTEDDEFAULTBUTTON,
+
 	COL_LASTPALETTECOLOR
 };
 
-#endif  // __COLORS_HPP__
+#endif // FARCOLOR_HPP_57151931_4591_44A5_92CF_8E51D1FBC57E

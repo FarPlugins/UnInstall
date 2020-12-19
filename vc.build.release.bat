@@ -1,35 +1,30 @@
 @echo off
 
-if exist makefile set MAKEFILE=makefile
+mkdir bin
 
-if exist "%VS100COMNTOOLS%..\..\VC\BIN\vcvars32.bat" (
-  call "%VS100COMNTOOLS%..\..\VC\BIN\vcvars32.bat"
+if exist "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" (
+  call "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" x86
 ) else (
-  call "C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\vcvars32.bat"
+  call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 )
 
-set WIDE=1
-set IA64=
-set AMD64=
-set CPU=
-set PLATFORM=
-set DEBUG=
-set RELEASE=1
-set FAR3=1
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=../bin/x86 -G "CodeBlocks - NMake Makefiles"
+cmake --build . --target install 
 
-nmake /A /B /F %MAKEFILE%
-rem nmake /F %MAKEFILE%
 if errorlevel 1 goto end
 
-if exist "%VS100COMNTOOLS%..\..\VC\BIN\x86_amd64\vcvarsx86_amd64.bat" (
-  call "%VS100COMNTOOLS%..\..\VC\BIN\x86_amd64\vcvarsx86_amd64.bat"
+cd ..
+if exist "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" (
+  call "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" x64
 ) else (
-  call "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\vcvarsx86_amd64.bat"
+  call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 )
-set AMD64=1
-set CPU=AMD64
-set PLATFORM=x64
-nmake /A /B /F %MAKEFILE%
-rem nmake /F %MAKEFILE%
+mkdir build64
+cd build64
+cmake .. -DCMAKE_INSTALL_PREFIX=../bin/x64 -G "CodeBlocks - NMake Makefiles"
+cmake --build . --target install 
 
 :end
+echo See result in directory "bin"
