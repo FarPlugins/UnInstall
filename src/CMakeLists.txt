@@ -15,7 +15,7 @@ set(SRC_DEF UnInstall.def)
 # common flags
 #====================================================
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-  # defaut for msvc project
+  # default for msvc project
   # CMAKE_CXX_FLAGS= /DWIN32 /D_WINDOWS /GR /EHsc
   # CMAKE_CXX_FLAGS_DEBUG= /MDd /Zi /Ob0 /Od /RTC1
   # CMAKE_CXX_FLAGS_RELEASE= /MD /O2 /Ob2 /DNDEBUG
@@ -49,6 +49,7 @@ set(MAIN_FLAGS_CXX_DEBUG ${FLAGS_CXX_DEBUG} ${FLAGS_CXX_DEFAULT})
 set(MAIN_FLAGS_CXX_RELEASE ${FLAGS_CXX_RELEASE} ${FLAGS_CXX_DEFAULT})
 set(MAIN_FLAGS_C_DEBUG ${FLAGS_C_DEBUG} ${FLAGS_C_DEFAULT})
 set(MAIN_FLAGS_C_RELEASE ${FLAGS_C_RELEASE} ${FLAGS_C_DEFAULT})
+
 #====================================================
 # build
 #====================================================
@@ -81,3 +82,18 @@ set_target_properties(UnInstall
     PROPERTIES
     LINK_FLAGS "${LINK_FLAGS}"
     )
+
+#====================================================
+# build misc files
+#====================================================
+configure_file(File_ID.diz File_ID.diz)
+configure_file(UnInstall_Eng.hlf UnInstall_Eng.hlf)
+configure_file(UnInstall_Rus.hlf UnInstall_Rus.hlf)
+
+#====================================================
+# install
+#====================================================
+install(TARGETS UnInstall RUNTIME DESTINATION .)
+install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map DESTINATION .)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/UnInstall_Eng.hlf ${CMAKE_CURRENT_BINARY_DIR}/UnInstall_Rus.hlf UnInstall_Eng.lng UnInstall_Rus.lng DESTINATION .)
+install(FILES ${PROJECT_SOURCE_DIR}/../WhatsNew.Rus.txt ${PROJECT_SOURCE_DIR}/../ReadMe.Rus.txt ${PROJECT_SOURCE_DIR}/File_ID.diz DESTINATION .)
