@@ -35,24 +35,24 @@ void WINAPI SetStartupInfoW(const struct PluginStartupInfo* psInfo)
 	ReadRegistry();
 }
 
-void WINAPI GetPluginInfoW(struct PluginInfo* Info)
+void WINAPI GetPluginInfoW(struct PluginInfo* pInfo)
 {
 	static const wchar_t* PluginMenuStrings[1];
 	PluginMenuStrings[0] = GetMsg(MPlugIn);
-	Info->StructSize = sizeof(*Info);
+	pInfo->StructSize = sizeof(*pInfo);
 
 	if (Opt.WhereWork & 2)
-		Info->Flags |= PF_EDITOR;
+		pInfo->Flags |= PF_EDITOR;
 
 	if (Opt.WhereWork & 1)
-		Info->Flags |= PF_VIEWER;
+		pInfo->Flags |= PF_VIEWER;
 
-	Info->PluginMenu.Strings = PluginMenuStrings;
-	Info->PluginMenu.Count = ARRAYSIZE(PluginMenuStrings);
-	Info->PluginMenu.Guids = &PluginMenuGuid;
-	Info->PluginConfig.Strings = PluginMenuStrings;
-	Info->PluginConfig.Count = ARRAYSIZE(PluginMenuStrings);
-	Info->PluginConfig.Guids = &PluginConfigGuid;
+	pInfo->PluginMenu.Strings = PluginMenuStrings;
+	pInfo->PluginMenu.Count = ARRAYSIZE(PluginMenuStrings);
+	pInfo->PluginMenu.Guids = &PluginMenuGuid;
+	pInfo->PluginConfig.Strings = PluginMenuStrings;
+	pInfo->PluginConfig.Count = ARRAYSIZE(PluginMenuStrings);
+	pInfo->PluginConfig.Guids = &PluginConfigGuid;
 }
 
 void ResizeDialog(HANDLE hDlg)
@@ -443,7 +443,9 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg, intptr_t Msg, intptr_t Param1, void* 
 				}
 				//--default
 
-				if (record->Event.KeyEvent.wVirtualKeyCode >= VK_SPACE && record->Event.KeyEvent.wVirtualKeyCode <= VK_DIVIDE && record->Event.KeyEvent.uChar.UnicodeChar != 0)
+				if (((record->Event.KeyEvent.wVirtualKeyCode >= VK_SPACE && record->Event.KeyEvent.wVirtualKeyCode <= VK_DIVIDE)
+					|| (record->Event.KeyEvent.wVirtualKeyCode >= VK_OEM_PLUS && record->Event.KeyEvent.wVirtualKeyCode <= VK_OEM_PERIOD))
+					&& record->Event.KeyEvent.uChar.UnicodeChar != 0)
 				{
 					struct FarListInfo ListInfo {};
 					ListInfo.StructSize = sizeof(FarListInfo);
@@ -497,6 +499,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg, intptr_t Msg, intptr_t Param1, void* 
 
 HANDLE WINAPI OpenW(const struct OpenInfo* oInfo)
 {
+	(void)oInfo;
 	ReadRegistry();
 	struct FarDialogItem DialogItems[1];
 	ZeroMemory(DialogItems, sizeof(DialogItems));
@@ -526,6 +529,7 @@ HANDLE WINAPI OpenW(const struct OpenInfo* oInfo)
 
 intptr_t WINAPI ConfigureW(const struct ConfigureInfo* cInfo)
 {
+	(void)cInfo;
 	PluginDialogBuilder Config(Info, MainGuid, ConfigGuid, MPlugIn, L"Configuration");
 	FarDialogItem* p2;
 	BOOL bShowInViewer = (Opt.WhereWork & 1) != 0;
@@ -542,17 +546,17 @@ intptr_t WINAPI ConfigureW(const struct ConfigureInfo* cInfo)
 	Config.AddCheckbox(MForceMsiUse, &bForceMsiUse);
 	Config.AddSeparator();
 
-    std::vector<const wchar_t*> AEnter;
-    AEnter.reserve(7);
-    for (size_t i = 0; i < 7; i++)
-    {
-        AEnter.push_back(_wcsdup(GetMsg(MActionUninstallWait + i)));
-    }
-	p2 = Config.AddComboBox(&Opt.EnterAction, nullptr,23, AEnter.data(),AEnter.size(), DIF_NONE);
-    Config.AddTextBefore(p2,MEnterAction);
+	std::vector<const wchar_t*> AEnter;
+	AEnter.reserve(7);
+	for (size_t i = 0; i < 7; i++)
+	{
+		AEnter.push_back(_wcsdup(GetMsg(MActionUninstallWait + i)));
+	}
+	p2 = Config.AddComboBox(&Opt.EnterAction, nullptr, 23, AEnter.data(), AEnter.size(), DIF_NONE);
+	Config.AddTextBefore(p2, MEnterAction);
 
-    p2 = Config.AddComboBox(&Opt.ShiftEnterAction, nullptr,23, AEnter.data(),AEnter.size(), DIF_NONE);
-    Config.AddTextBefore(p2,MShiftEnterAction);
+	p2 = Config.AddComboBox(&Opt.ShiftEnterAction, nullptr, 23, AEnter.data(), AEnter.size(), DIF_NONE);
+	Config.AddTextBefore(p2, MShiftEnterAction);
 	Config.AddOKCancel(MBtnOk, MBtnCancel);
 
 	if (Config.ShowDialog())
