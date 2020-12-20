@@ -16,9 +16,9 @@ endif ()
 message("Build type for UnInstall: ${CMAKE_BUILD_TYPE}")
 
 # check platform for build
-set(IS_x64_PLATFORM FALSE)
+set(IS_x64_PLATFORM FALSE CACHE BOOL "" FORCE)
 if ("$ENV{PLATFORM}" MATCHES "x64")
-  set(IS_x64_PLATFORM TRUE)
+  set(IS_x64_PLATFORM TRUE CACHE BOOL "" FORCE)
 endif ()
 
 # Get plugin version from src/version.hpp and put it in PLUGIN_VERSION
