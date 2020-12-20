@@ -96,7 +96,7 @@ struct Options
 
 struct KeyInfo
 {
-	wchar_t Keys[KeysCount][MAX_PATH];
+	wchar_t Keys[KeysCount][MAX_PATH*2];
 	wchar_t ListItem[MAX_PATH];
 	bool Avail[KeysCount];
 	RegKeyPath RegKey;
@@ -189,7 +189,8 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 
 	for (int i = 0; i < KeysCount; i++)
 	{
-		bufSize = MAX_PATH * sizeof(wchar_t);
+	    // TODO look at max_path everywhere
+		bufSize = 2*MAX_PATH * sizeof(wchar_t);
 
 		if (HelpTopics[i][0] == 0)
 		{
