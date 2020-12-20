@@ -10,7 +10,7 @@ if exist "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" (
 
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../bin/x86 -G "CodeBlocks - NMake Makefiles"
+cmake .. -DCMAKE_INSTALL_PREFIX=../bin/x86 -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - NMake Makefiles"
 cmake --build . --target install 
 
 if errorlevel 1 goto end
@@ -23,7 +23,7 @@ if exist "%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat" (
 )
 mkdir build64
 cd build64
-cmake .. -DCMAKE_INSTALL_PREFIX=../bin/x64 -G "CodeBlocks - NMake Makefiles"
+cmake .. -DCMAKE_INSTALL_PREFIX=../bin/x64 -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - NMake Makefiles"
 cmake --build . --target install 
 
 :end
