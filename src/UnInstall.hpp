@@ -2,7 +2,7 @@
 #include "PluginSettings.hpp"
 
 //дополнительные описания к ключам
-const wchar_t *HelpTopics[] =
+const wchar_t* HelpTopics[] =
 {
 	L"DisplayName",
 	L"",
@@ -17,7 +17,7 @@ const wchar_t *HelpTopics[] =
 	L"InstallDate" // Must be last item!
 };
 
-const wchar_t *HiddenPrefixes[] =
+const wchar_t* HiddenPrefixes[] =
 {
 	L"InstallWIX_{",
 	L"InstallShield_{"
@@ -26,7 +26,7 @@ const wchar_t *HiddenPrefixes[] =
 enum
 {
 	LIST_BOX,
-	DMU_UPDATE = DM_USER+1
+	DMU_UPDATE = DM_USER + 1
 };
 
 enum ActionEnum
@@ -118,7 +118,7 @@ bool ValidGuid(const wchar_t* guid)
 	ZeroMemory(buf, sizeof(buf));
 	unsigned l = lstrlen(guid);
 
-	for(unsigned i = 0; (i < c_max_guid_len) && (i < l); i++) buf[i] = guid[i];
+	for (unsigned i = 0; (i < c_max_guid_len) && (i < l); i++) buf[i] = guid[i];
 
 	IID iid;
 	return IIDFromString(buf, &iid) == S_OK;
@@ -129,35 +129,35 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 {
 	HKEY userKey;
 	DWORD regType;
-	wchar_t fullN[MAX_PATH*2], *pszNamePtr;
+	wchar_t fullN[MAX_PATH * 2], * pszNamePtr;
 	LONG ExitCode;
 	DWORD bufSize, dwTest;
 	memset(&key, 0, sizeof(key));
 	key.RegKey = RegKey;
 	key.RegView = RegView;
-	StringCchCopy(key.SubKeyName,ARRAYSIZE(key.SubKeyName),Buf);
-	StringCchCopy(fullN,ARRAYSIZE(fullN),key.RegKey.Path);
-	StringCchCat(fullN,ARRAYSIZE(fullN),L"\\");
+	StringCchCopy(key.SubKeyName, ARRAYSIZE(key.SubKeyName), Buf);
+	StringCchCopy(fullN, ARRAYSIZE(fullN), key.RegKey.Path);
+	StringCchCat(fullN, ARRAYSIZE(fullN), L"\\");
 	pszNamePtr = fullN + wcslen(fullN);
-	StringCchCat(fullN,ARRAYSIZE(fullN),key.SubKeyName);
+	StringCchCat(fullN, ARRAYSIZE(fullN), key.SubKeyName);
 
-	if(RegOpenKeyEx(key.RegKey.Root, fullN, 0, KEY_READ | RegView, &userKey) != ERROR_SUCCESS)
+	if (RegOpenKeyEx(key.RegKey.Root, fullN, 0, KEY_READ | RegView, &userKey) != ERROR_SUCCESS)
 		return FALSE;
 
 	// "InstallWIX_{GUID}", "InstallShield_{"
-	for(int h = 0; h < ARRAYSIZE(HiddenPrefixes); h++)
+	for (int h = 0; h < ARRAYSIZE(HiddenPrefixes); h++)
 	{
 		int nPrefixLen = lstrlen(HiddenPrefixes[h]);
 
-		if(memcmp(key.SubKeyName, HiddenPrefixes[h], nPrefixLen*sizeof(wchar_t)) == 0
-		        && ValidGuid(key.SubKeyName+nPrefixLen-1))
+		if (memcmp(key.SubKeyName, HiddenPrefixes[h], nPrefixLen * sizeof(wchar_t)) == 0
+			&& ValidGuid(key.SubKeyName + nPrefixLen - 1))
 		{
 			// Это может быть "ссылка" на гуид продукта
 			*pszNamePtr = 0;
-			StringCchCat(fullN,ARRAYSIZE(fullN),key.SubKeyName+nPrefixLen-1);
+			StringCchCat(fullN, ARRAYSIZE(fullN), key.SubKeyName + nPrefixLen - 1);
 			HKEY hTestKey;
 
-			if(RegOpenKeyEx(key.RegKey.Root, fullN, 0, KEY_READ | RegView, &hTestKey) == ERROR_SUCCESS)
+			if (RegOpenKeyEx(key.RegKey.Root, fullN, 0, KEY_READ | RegView, &hTestKey) == ERROR_SUCCESS)
 			{
 				key.Hidden = true;
 				RegCloseKey(hTestKey);
@@ -165,12 +165,12 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 		}
 	}
 
-	key.WindowsInstaller = (RegQueryValueEx(userKey,L"WindowsInstaller",0,NULL,NULL,NULL) == ERROR_SUCCESS) && ValidGuid(key.SubKeyName);
-	key.NoModify = (RegQueryValueEx(userKey,L"NoModify",0,NULL,(LPBYTE)&dwTest,&(bufSize)) == ERROR_SUCCESS) && (dwTest!=0);
-	key.NoRepair = (RegQueryValueEx(userKey,L"NoRepair",0,NULL,(LPBYTE)&dwTest,&(bufSize)) == ERROR_SUCCESS) && (dwTest!=0);
+	key.WindowsInstaller = (RegQueryValueEx(userKey, L"WindowsInstaller", 0, NULL, NULL, NULL) == ERROR_SUCCESS) && ValidGuid(key.SubKeyName);
+	key.NoModify = (RegQueryValueEx(userKey, L"NoModify", 0, NULL, (LPBYTE)&dwTest, &(bufSize)) == ERROR_SUCCESS) && (dwTest != 0);
+	key.NoRepair = (RegQueryValueEx(userKey, L"NoRepair", 0, NULL, (LPBYTE)&dwTest, &(bufSize)) == ERROR_SUCCESS) && (dwTest != 0);
 	wchar_t sKeyTime[64]; int nKeyTimeLen;
 
-	if(RegQueryInfoKey(userKey,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&key.RegTime) != ERROR_SUCCESS)
+	if (RegQueryInfoKey(userKey, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &key.RegTime) != ERROR_SUCCESS)
 	{
 		memset(&key.RegTime, 0, sizeof(key.RegTime));
 		//key.Keys[InstallDate][0] = 0;
@@ -187,57 +187,57 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 		nKeyTimeLen = lstrlen(sKeyTime) + 1;
 	}
 
-	for(int i=0; i<KeysCount; i++)
+	for (int i = 0; i < KeysCount; i++)
 	{
 		bufSize = MAX_PATH * sizeof(wchar_t);
 
-		if(HelpTopics[i][0] == 0)
+		if (HelpTopics[i][0] == 0)
 		{
 			ExitCode = ERROR_SUCCESS;
 
-			if(RegView)
+			if (RegView)
 			{
 				StringCchPrintf(key.Keys[i], ARRAYSIZE(key.Keys[i]), L"%s[%u]\\...\\",
-				                (RegKey.Root == HKEY_LOCAL_MACHINE) ? L"HKLM" : L"HKCU",
-				                (RegView == KEY_WOW64_64KEY) ? 64 : 32);
+					(RegKey.Root == HKEY_LOCAL_MACHINE) ? L"HKLM" : L"HKCU",
+					(RegView == KEY_WOW64_64KEY) ? 64 : 32);
 			}
 			else
 			{
 				StringCchPrintf(key.Keys[i], ARRAYSIZE(key.Keys[i]), L"%s\\...\\",
-				                (RegKey.Root == HKEY_LOCAL_MACHINE) ? L"HKLM" : L"HKCU");
+					(RegKey.Root == HKEY_LOCAL_MACHINE) ? L"HKLM" : L"HKCU");
 			}
 
 			int nRootLen = lstrlen(key.Keys[i]);
-			lstrcpyn(key.Keys[i]+nRootLen, key.SubKeyName, ARRAYSIZE(key.Keys[i])-nRootLen);
+			lstrcpyn(key.Keys[i] + nRootLen, key.SubKeyName, ARRAYSIZE(key.Keys[i]) - nRootLen);
 		}
 		else
 		{
-			if(i == ModifyPath && key.NoModify)
+			if (i == ModifyPath && key.NoModify)
 				continue;
 
-			if(i == InstallDate) bufSize -= nKeyTimeLen * sizeof(wchar_t);
+			if (i == InstallDate) bufSize -= nKeyTimeLen * sizeof(wchar_t);
 
-			ExitCode = RegQueryValueEx(userKey,HelpTopics[i],0,&regType,(LPBYTE)key.Keys[i],&bufSize);
+			ExitCode = RegQueryValueEx(userKey, HelpTopics[i], 0, &regType, (LPBYTE)key.Keys[i], &bufSize);
 		}
 
 		key.Keys[i][ARRAYSIZE(key.Keys[i]) - 1] = 0;
 
-		if(ExitCode != ERROR_SUCCESS || lstrcmp(key.Keys[i],L"") == 0)
+		if (ExitCode != ERROR_SUCCESS || lstrcmp(key.Keys[i], L"") == 0)
 		{
-			if((i == UninstallString && !key.WindowsInstaller) || i == DisplayName)
+			if ((i == UninstallString && !key.WindowsInstaller) || i == DisplayName)
 			{
 				RegCloseKey(userKey);
 				return FALSE;
 			}
 
-			if(i == InstallDate && nKeyTimeLen)
+			if (i == InstallDate && nKeyTimeLen)
 			{
-				StringCchCopy(key.Keys[i],ARRAYSIZE(key.Keys[i]),sKeyTime+3);
+				StringCchCopy(key.Keys[i], ARRAYSIZE(key.Keys[i]), sKeyTime + 3);
 				key.Avail[i] = TRUE;
 			}
 			else
 			{
-				StringCchCopy(key.Keys[i],ARRAYSIZE(key.Keys[i]),L"");
+				StringCchCopy(key.Keys[i], ARRAYSIZE(key.Keys[i]), L"");
 				key.Avail[i] = FALSE;
 			}
 		}
@@ -245,20 +245,20 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 		{
 			key.Avail[i] = TRUE;
 
-			if(i == InstallDate)
+			if (i == InstallDate)
 			{
 				// 20101105
-				if(lstrlen(key.Keys[i]) == 8)
+				if (lstrlen(key.Keys[i]) == 8)
 				{
-					wchar_t *pszEnd = 0;
+					wchar_t* pszEnd = 0;
 					DWORD ulDate = wcstoul(key.Keys[i], &pszEnd, 10);
 
-					if(ulDate)
+					if (ulDate)
 					{
 						DWORD nDay = ulDate % 100; ulDate = (ulDate - nDay) / 100;
 						DWORD nMon = ulDate % 100; ulDate = (ulDate - nMon) / 100;
 
-						if(ulDate && nMon && nDay)
+						if (ulDate && nMon && nDay)
 						{
 							StringCchPrintf(key.InstDate, ARRAYSIZE(key.InstDate), L"%02u.%02u.%02u", nDay, nMon, (ulDate % 100));
 							key.InstDateN = ((ulDate & 0xFFFF) << 16) | ((nMon & 0xFF) << 8) | (nDay & 0xFF);
@@ -267,22 +267,22 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 				}
 			}
 
-			if(i == InstallDate && nKeyTimeLen) StringCchCat(key.Keys[i], ARRAYSIZE(key.Keys[i]), sKeyTime);
+			if (i == InstallDate && nKeyTimeLen) StringCchCat(key.Keys[i], ARRAYSIZE(key.Keys[i]), sKeyTime);
 		}
 	}
 
 	RegCloseKey(userKey);
 
-	if((!key.WindowsInstaller)
-	        && (key.Keys[ModifyPath][0] == 0) && (key.Keys[UninstallString][0] == 0))
+	if ((!key.WindowsInstaller)
+		&& (key.Keys[ModifyPath][0] == 0) && (key.Keys[UninstallString][0] == 0))
 	{
 		key.Hidden = true;
 	}
 
-	if(key.InstDate[0] == 0)
+	if (key.InstDate[0] == 0)
 		StringCchCopy(key.InstDate, ARRAYSIZE(key.InstDate), L"        ");
 
-	if(key.WindowsInstaller)
+	if (key.WindowsInstaller)
 	{
 		key.CanModify = !key.NoModify;
 		key.CanRepair = !key.NoRepair;
@@ -295,48 +295,48 @@ bool FillReg(KeyInfo& key, wchar_t* Buf, RegKeyPath& RegKey, REGSAM RegView)
 	return TRUE;
 }
 
-INT_PTR WINAPI EntryDlgProc(HANDLE hDlg,intptr_t Msg,intptr_t Param1,void* Param2)
+INT_PTR WINAPI EntryDlgProc(HANDLE hDlg, intptr_t Msg, intptr_t Param1, void* Param2)
 {
-	switch(Msg)
+	switch (Msg)
 	{
-		case DN_INITDIALOG:
+	case DN_INITDIALOG:
+	{
+		FarDialogItem item;
+		for (unsigned id = 0; Info.SendDlgMessage(hDlg, DM_GETDLGITEMSHORT, id, &item); id++)
 		{
-			FarDialogItem item;
-			for(unsigned id = 0; Info.SendDlgMessage(hDlg, DM_GETDLGITEMSHORT, id, &item); id++)
-			{
-				if(item.Type == DI_EDIT)
-					Info.SendDlgMessage(hDlg, DM_EDITUNCHANGEDFLAG, id, 0);
-			}
+			if (item.Type == DI_EDIT)
+				Info.SendDlgMessage(hDlg, DM_EDITUNCHANGEDFLAG, id, 0);
 		}
-		break;
-		case DN_CONTROLINPUT:
+	}
+	break;
+	case DN_CONTROLINPUT:
+	{
+		INPUT_RECORD* record = (INPUT_RECORD*)Param2;
+		if ((record->EventType == KEY_EVENT) && ((record->Event.KeyEvent.wVirtualKeyCode == VK_PRIOR) || (record->Event.KeyEvent.wVirtualKeyCode == VK_NEXT)))
 		{
-			INPUT_RECORD* record=(INPUT_RECORD *)Param2;
-			if((record->EventType==KEY_EVENT)&&((record->Event.KeyEvent.wVirtualKeyCode == VK_PRIOR) || (record->Event.KeyEvent.wVirtualKeyCode == VK_NEXT)))
-			{
-				wchar_t sMacro[32];
-				if(record->Event.KeyEvent.wVirtualKeyCode == VK_PRIOR)
-					StringCchCopy(sMacro, ARRAYSIZE(sMacro), L"Esc Up F3");
-				else
-					StringCchCopy(sMacro, ARRAYSIZE(sMacro), L"Esc Down F3");
+			wchar_t sMacro[32];
+			if (record->Event.KeyEvent.wVirtualKeyCode == VK_PRIOR)
+				StringCchCopy(sMacro, ARRAYSIZE(sMacro), L"Esc Up F3");
+			else
+				StringCchCopy(sMacro, ARRAYSIZE(sMacro), L"Esc Down F3");
 
-				MacroSendMacroText msmt{};
-				msmt.StructSize= sizeof(MacroSendMacroText);
-				msmt.SequenceText=sMacro;
-				msmt.Flags=KMFLAGS_NONE;
-				Info.MacroControl(&MainGuid,MCTL_SENDSTRING, 0,&msmt);
+			MacroSendMacroText msmt{};
+			msmt.StructSize = sizeof(MacroSendMacroText);
+			msmt.SequenceText = sMacro;
+			msmt.Flags = KMFLAGS_NONE;
+			Info.MacroControl(&MainGuid, MCTL_SENDSTRING, 0, &msmt);
 
-				return TRUE;
-			}
+			return TRUE;
 		}
-		break;
+	}
+	break;
 	}
 
-	return Info.DefDlgProc(hDlg,Msg,Param1,Param2);
+	return Info.DefDlgProc(hDlg, Msg, Param1, Param2);
 }
 
 //заполнение пункта диалога
-void FillDialog(FarDialogItem & DialogItem, 
+void FillDialog(FarDialogItem& DialogItem,
 
 	FARDIALOGITEMTYPES Type,
 	int X1, int Y1, int X2, int Y2, int Flags, int nData)
@@ -356,9 +356,9 @@ void FillDialog(FarDialogItem & DialogItem,
 	DialogItem.MaxLength = 0;
 	DialogItem.UserData = 0;
 
-	if(Type == DI_BUTTON)
+	if (Type == DI_BUTTON)
 	{
-		DialogItem.Flags |=DIF_FOCUS | DIF_DEFAULTBUTTON;
+		DialogItem.Flags |= DIF_FOCUS | DIF_DEFAULTBUTTON;
 	}
 }
 
@@ -368,13 +368,13 @@ void DisplayEntry(int Sel)
 	unsigned max_len = 0;
 	unsigned cnt = 0;
 
-	for(int i=0; i<KeysCount; i++)
+	for (int i = 0; i < KeysCount; i++)
 	{
-		if(p[Sel].Avail[i])
+		if (p[Sel].Avail[i])
 		{
 			unsigned len = lstrlen(p[Sel].Keys[i]);
 
-			if(len + 3 > sx) sx = len + 3;
+			if (len + 3 > sx) sx = len + 3;
 
 			cnt++;
 		}
@@ -383,17 +383,17 @@ void DisplayEntry(int Sel)
 	unsigned con_sx = 80;
 	HANDLE con = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	if(con != INVALID_HANDLE_VALUE)
+	if (con != INVALID_HANDLE_VALUE)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO con_info;
 
-		if(GetConsoleScreenBufferInfo(con, &con_info))
+		if (GetConsoleScreenBufferInfo(con, &con_info))
 		{
 			con_sx = con_info.srWindow.Right - con_info.srWindow.Left + 1;
 		}
 	}
 
-	if(sx + 10 > con_sx) sx = con_sx - 10;
+	if (sx + 10 > con_sx) sx = con_sx - 10;
 
 	unsigned sy = cnt * 2;
 	unsigned di_cnt = cnt * 2 + 1;
@@ -401,9 +401,9 @@ void DisplayEntry(int Sel)
 	unsigned y = 2;
 	unsigned idx = 1;
 
-	for(int i=0; i<KeysCount; i++)
+	for (int i = 0; i < KeysCount; i++)
 	{
-		if(p[Sel].Avail[i])
+		if (p[Sel].Avail[i])
 		{
 			FillDialog(DialogItems[idx], DI_TEXT, 5, y, 0, y, 0, MName + i);
 			idx++;
@@ -418,9 +418,9 @@ void DisplayEntry(int Sel)
 	}
 
 	FillDialog(DialogItems[0], DI_DOUBLEBOX, 3, 1, sx + 4, sy + 2, 0, p[Sel].WindowsInstaller ? MUninstallEntryMSI : MUninstallEntry);
-	HANDLE h_dlg = Info.DialogInit(&MainGuid,&UninstallEntryGuid, -1, -1, sx + 8, sy + 4, L"UninstallEntry", DialogItems, di_cnt, 0, 0, EntryDlgProc, 0);
+	HANDLE h_dlg = Info.DialogInit(&MainGuid, &UninstallEntryGuid, -1, -1, sx + 8, sy + 4, L"UninstallEntry", DialogItems, di_cnt, 0, 0, EntryDlgProc, 0);
 
-	if(h_dlg != INVALID_HANDLE_VALUE)
+	if (h_dlg != INVALID_HANDLE_VALUE)
 	{
 		Info.DialogRun(h_dlg);
 		Info.DialogFree(h_dlg);
@@ -437,19 +437,19 @@ BOOL IsUserAdmin()
 	//if (osv.dwMajorVersion < 6)
 	//	return FALSE;
 	BOOL b;
-	SID_IDENTIFIER_AUTHORITY NtAuthority = {SECURITY_NT_AUTHORITY};
+	SID_IDENTIFIER_AUTHORITY NtAuthority = { SECURITY_NT_AUTHORITY };
 	PSID AdministratorsGroup;
 	b = AllocateAndInitializeSid(
-	        &NtAuthority,
-	        2,
-	        SECURITY_BUILTIN_DOMAIN_RID,
-	        DOMAIN_ALIAS_RID_ADMINS,
-	        0, 0, 0, 0, 0, 0,
-	        &AdministratorsGroup);
+		&NtAuthority,
+		2,
+		SECURITY_BUILTIN_DOMAIN_RID,
+		DOMAIN_ALIAS_RID_ADMINS,
+		0, 0, 0, 0, 0, 0,
+		&AdministratorsGroup);
 
-	if(b)
+	if (b)
 	{
-		if(!CheckTokenMembership(NULL, AdministratorsGroup, &b))
+		if (!CheckTokenMembership(NULL, AdministratorsGroup, &b))
 		{
 			b = FALSE;
 		}
@@ -463,29 +463,29 @@ BOOL IsUserAdmin()
 BOOL CheckForEsc()
 {
 	BOOL bEscaped = FALSE;
-	INPUT_RECORD *InputRec;
-	DWORD NumberOfEvents, ReadCnt,i;
+	INPUT_RECORD* InputRec;
+	DWORD NumberOfEvents, ReadCnt, i;
 	HANDLE Console = GetStdHandle(STD_INPUT_HANDLE);
 
-	if(GetNumberOfConsoleInputEvents(Console,&NumberOfEvents) && NumberOfEvents)
+	if (GetNumberOfConsoleInputEvents(Console, &NumberOfEvents) && NumberOfEvents)
 	{
-		if((InputRec=(INPUT_RECORD *)calloc(NumberOfEvents,sizeof(INPUT_RECORD))) != NULL)
+		if ((InputRec = (INPUT_RECORD*)calloc(NumberOfEvents, sizeof(INPUT_RECORD))) != NULL)
 		{
-			if(PeekConsoleInput(Console,InputRec,NumberOfEvents,&ReadCnt))
+			if (PeekConsoleInput(Console, InputRec, NumberOfEvents, &ReadCnt))
 			{
-				i=0;
+				i = 0;
 
-				while(i < ReadCnt)
+				while (i < ReadCnt)
 				{
-					if(InputRec[i].EventType == KEY_EVENT && InputRec[i].Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
+					if (InputRec[i].EventType == KEY_EVENT && InputRec[i].Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
 					{
-						while(((i+1) < ReadCnt)
-						        && InputRec[i+1].EventType == KEY_EVENT
-						        && InputRec[i+1].Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
+						while (((i + 1) < ReadCnt)
+							&& InputRec[i + 1].EventType == KEY_EVENT
+							&& InputRec[i + 1].Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
 							i++;
 
 						bEscaped = TRUE;
-						ReadConsoleInput(Console,InputRec,i+1,&ReadCnt);
+						ReadConsoleInput(Console, InputRec, i + 1, &ReadCnt);
 						break;
 					}
 
@@ -504,27 +504,27 @@ BOOL CheckForEsc()
 BOOL IsFilePath(LPCWSTR asFilePath, bool abCheckFileExist)
 {
 	// Если в пути встречаются недопустимые символы
-	if(wcschr(asFilePath, L'"') ||
-	        wcschr(asFilePath, L'>') ||
-	        wcschr(asFilePath, L'<') ||
-	        wcschr(asFilePath, L'|')
-	  )
+	if (wcschr(asFilePath, L'"') ||
+		wcschr(asFilePath, L'>') ||
+		wcschr(asFilePath, L'<') ||
+		wcschr(asFilePath, L'|')
+		)
 		return FALSE;
 
 	// Пропуск UNC "\\?\"
-	if(asFilePath[0] == L'\\' && asFilePath[1] == L'\\' && asFilePath[2] == L'?' && asFilePath[3] == L'\\')
+	if (asFilePath[0] == L'\\' && asFilePath[1] == L'\\' && asFilePath[2] == L'?' && asFilePath[3] == L'\\')
 		asFilePath += 4;
 
 	// Если asFilePath содержит два (и более) ":\"
 	LPCWSTR pszColon = wcschr(asFilePath, L':');
 
-	if(pszColon)
+	if (pszColon)
 	{
 		// Если есть ":", то это должен быть путь вида "X:\xxx", т.е. ":" - второй символ
-		if(pszColon != (asFilePath+1))
+		if (pszColon != (asFilePath + 1))
 			return FALSE;
 
-		if(wcschr(pszColon+1, L':'))
+		if (wcschr(pszColon + 1, L':'))
 			return FALSE;
 	}
 
@@ -557,24 +557,24 @@ BOOL FirstArg(LPCTSTR asCmdLine, wchar_t* rsArg/*[MAX_PATH+1]*/, LPCTSTR* rsNext
 	wchar_t ch = *psCmdLine;
 	size_t nArgLen = 0;
 
-	while(ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n') ch = *(++psCmdLine);
+	while (ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n') ch = *(++psCmdLine);
 
-	if(ch == 0) return FALSE;
+	if (ch == 0) return FALSE;
 
 	// аргумент начинается с "
-	if(ch == L'"')
+	if (ch == L'"')
 	{
 		psCmdLine++;
 		pch = wcschr(psCmdLine, L'"');
 
-		if(!pch) return FALSE;
+		if (!pch) return FALSE;
 
-		while(pch[1] == L'"')
+		while (pch[1] == L'"')
 		{
 			pch += 2;
 			pch = wcschr(pch, L'"');
 
-			if(!pch) return FALSE;
+			if (!pch) return FALSE;
 		}
 
 		// Теперь в pch ссылка на последнюю "
@@ -587,25 +587,25 @@ BOOL FirstArg(LPCTSTR asCmdLine, wchar_t* rsArg/*[MAX_PATH+1]*/, LPCTSTR* rsNext
 		pch = psCmdLine;
 
 		// Ищем обычным образом (до пробела/кавычки)
-		while(*pch && *pch!=L' ' && *pch!=L'"') pch++;
+		while (*pch && *pch != L' ' && *pch != L'"') pch++;
 
 		//if (!pch) pch = psCmdLine + lstrlenW(psCmdLine); // до конца строки
 	}
 
 	nArgLen = pch - psCmdLine;
 
-	if(nArgLen > MAX_PATH) return FALSE;
+	if (nArgLen > MAX_PATH) return FALSE;
 
 	// Вернуть аргумент
-	memcpy(rsArg, psCmdLine, nArgLen*sizeof(wchar_t));
+	memcpy(rsArg, psCmdLine, nArgLen * sizeof(wchar_t));
 	rsArg[nArgLen] = 0;
 	psCmdLine = pch;
 	// Finalize
 	ch = *psCmdLine; // может указывать на закрывающую кавычку
 
-	if(ch == L'"') ch = *(++psCmdLine);
+	if (ch == L'"') ch = *(++psCmdLine);
 
-	while(ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n') ch = *(++psCmdLine);
+	while (ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n') ch = *(++psCmdLine);
 
 	*rsNextArg = psCmdLine;
 	return TRUE;
@@ -621,15 +621,15 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 	SETITEM(Action_UninstallWait, MActionUninstallWait);
 	SETITEM(Action_Uninstall, MActionUninstall);
 
-	if(nChkCount > 1)
+	if (nChkCount > 1)
 		items[Action_Uninstall].Flags |= MIF_DISABLE;
 
 	SETITEM(Action_ModifyWait, MActionModifyWait);
 	SETITEM(Action_Modify, MActionModify);
 
-	if(nChkCount > 1)
+	if (nChkCount > 1)
 		items[Action_Modify].Flags |= MIF_DISABLE;
-	else if(!p[Sel].CanModify)
+	else if (!p[Sel].CanModify)
 	{
 		items[Action_Modify].Flags |= MIF_DISABLE;
 		items[Action_ModifyWait].Flags |= MIF_DISABLE;
@@ -638,9 +638,9 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 	SETITEM(Action_RepairWait, MActionRepairWait);
 	SETITEM(Action_Repair, MActionRepair);
 
-	if(nChkCount > 1)
+	if (nChkCount > 1)
 		items[Action_Repair].Flags |= MIF_DISABLE;
-	else if(!p[Sel].CanRepair)
+	else if (!p[Sel].CanRepair)
 	{
 		items[Action_Repair].Flags |= MIF_DISABLE;
 		items[Action_RepairWait].Flags |= MIF_DISABLE;
@@ -649,32 +649,32 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 
 	intptr_t iRc;
 	intptr_t BreakCode;
-	struct FarKey BreakKeys[1]= {VK_F7,0};
+	struct FarKey BreakKeys[1] = { VK_F7,0 };
 
 	wchar_t szMenuTitle[MAX_PATH];
 
-	if(nChkCount > 1)
+	if (nChkCount > 1)
 		StringCchPrintf(szMenuTitle, ARRAYSIZE(szMenuTitle), GetMsg(MMenuTopLineN), nChkCount);
 	else
 		StringCchCopy(szMenuTitle, ARRAYSIZE(szMenuTitle), GetMsg(MMenuTopLine));
 
-	while(true)
+	while (true)
 	{
 
-		iRc = Info.Menu(&MainGuid,&ActionMenu, -1,-1,0, FMENU_WRAPMODE, szMenuTitle,
-		                GetMsg(LowPriority ? MMenuBottomLine2 : MMenuBottomLine1),
-		                L"ActionMenu", BreakKeys, &BreakCode, (struct FarMenuItem *)items, ARRAYSIZE(items));
+		iRc = Info.Menu(&MainGuid, &ActionMenu, -1, -1, 0, FMENU_WRAPMODE, szMenuTitle,
+			GetMsg(LowPriority ? MMenuBottomLine2 : MMenuBottomLine1),
+			L"ActionMenu", BreakKeys, &BreakCode, (struct FarMenuItem*)items, ARRAYSIZE(items));
 
-		if(iRc < 0)
+		if (iRc < 0)
 			return -1;
 
-		if(BreakCode == 0)
+		if (BreakCode == 0)
 		{
 			LowPriority = !LowPriority;
 
-			for(UINT i = 0; i < ARRAYSIZE(items); i++)
+			for (UINT i = 0; i < ARRAYSIZE(items); i++)
 			{
-				if(i == iRc)
+				if (i == iRc)
 					items[i].Flags |= MIF_SELECTED;
 				else
 					items[i].Flags &= ~MIF_SELECTED;
@@ -687,7 +687,7 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 		}
 	}
 
-	if((Action & 0xFF) == Action_Menu)
+	if ((Action & 0xFF) == Action_Menu)
 		return -1; // ошибка
 
 	return Action;
@@ -695,12 +695,12 @@ int EntryMenu(int Sel, int& Action, bool& LowPriority, int nChkCount = 0)
 
 int ExecuteEntry(int Sel, int Action, bool LowPriority)
 {
-	if((Action & 0xFF) == Action_Menu)
+	if ((Action & 0xFF) == Action_Menu)
 	{
-		if(EntryMenu(Sel, Action, LowPriority) < 0)
+		if (EntryMenu(Sel, Action, LowPriority) < 0)
 			return -1;
 
-		if((Action & 0xFF) == Action_Menu)
+		if ((Action & 0xFF) == Action_Menu)
 			return -1; // ошибка
 	}
 
@@ -711,29 +711,29 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
-	wchar_t cmd_line[MAX_PATH*2+1], cmd_file[MAX_PATH+1], cmd_parm[MAX_PATH*2+1];
+	wchar_t cmd_line[MAX_PATH * 2 + 1], cmd_file[MAX_PATH + 1], cmd_parm[MAX_PATH * 2 + 1];
 	LPCTSTR pszString = NULL;
 
-	if((Action == Action_ModifyWait) || (Action == Action_Modify))
+	if ((Action == Action_ModifyWait) || (Action == Action_Modify))
 		pszString = p[Sel].Keys[ModifyPath];
 	//else if ((Action == Action_RepairWait) || (Action == Action_Repair))
 	//  pszString = NULL;
-	else if((Action == Action_UninstallWait) || (Action == Action_Uninstall))
+	else if ((Action == Action_UninstallWait) || (Action == Action_Uninstall))
 	{
-		if(!p[Sel].WindowsInstaller)
+		if (!p[Sel].WindowsInstaller)
 			pszString = p[Sel].Keys[UninstallString];
 	}
 
-	if(pszString && !*pszString)
+	if (pszString && !*pszString)
 		pszString = NULL;
 
-	if(p[Sel].WindowsInstaller && !(!Opt.ForceMsiUse && pszString))
+	if (p[Sel].WindowsInstaller && !(!Opt.ForceMsiUse && pszString))
 	{
 		wchar_t szCode[6];
 
-		if((Action == Action_UninstallWait) || (Action == Action_Uninstall))
+		if ((Action == Action_UninstallWait) || (Action == Action_Uninstall))
 			StringCchCopy(szCode, ARRAYSIZE(szCode), L" /x ");
-		else if((Action == Action_RepairWait) || (Action == Action_Repair))
+		else if ((Action == Action_RepairWait) || (Action == Action_Repair))
 			StringCchCopy(szCode, ARRAYSIZE(szCode), L" /fa ");
 		else //if ((Action == Action_ModifyWait) || (Action == Action_Modify))
 			StringCchCopy(szCode, ARRAYSIZE(szCode), L" /i ");
@@ -744,7 +744,7 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 		StringCchCat(cmd_line, ARRAYSIZE(cmd_line), p[Sel].SubKeyName);
 
 		// Для ShellExecuteEx
-		if(LowPriority)
+		if (LowPriority)
 		{
 			StringCchCopy(cmd_file, ARRAYSIZE(cmd_parm), L"cmd");
 			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), L"/c start /low ");
@@ -761,14 +761,14 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 	}
 	else
 	{
-		if(pszString == NULL)
+		if (pszString == NULL)
 			return 0;
 
 		// Для CreateProcess
 		StringCchCopy(cmd_line, ARRAYSIZE(cmd_line), pszString);
 
 		// Для ShellExecuteEx
-		if(LowPriority)
+		if (LowPriority)
 		{
 			StringCchCopy(cmd_file, ARRAYSIZE(cmd_parm), L"cmd");
 			StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), L"/c start /low \"\" ");
@@ -778,31 +778,31 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 		{
 			LPCTSTR psNextArg = NULL;
 
-			if(FirstArg(pszString, cmd_file, &psNextArg)
-			        && IsFilePath(cmd_file, true))
+			if (FirstArg(pszString, cmd_file, &psNextArg)
+				&& IsFilePath(cmd_file, true))
 			{
 				StringCchCopy(cmd_parm, ARRAYSIZE(cmd_parm), psNextArg);
 			}
 			else
 			{
-				#ifdef _DEBUG
+#ifdef _DEBUG
 				IsFilePath(pszString, true);
-				#endif
+#endif
 				StringCchCopy(cmd_file, ARRAYSIZE(cmd_file), pszString);
 				cmd_parm[0] = 0;
 			}
 		}
 	}
 
-	hScreen = Info.SaveScreen(0,0,-1,-1); //Это необходимо сделать, т.к. после запущенных программ нужно обновить окно ФАРа
+	hScreen = Info.SaveScreen(0, 0, -1, -1); //Это необходимо сделать, т.к. после запущенных программ нужно обновить окно ФАРа
 	BOOL ifCreate = FALSE, bElevationFailed = FALSE, bPriorityChanged = FALSE;
 	DWORD dwErr = 0;
 
 	// MSI сам выполнит повышение прав когда потребуется
-	if(!p[Sel].WindowsInstaller && Opt.UseElevation && !IsUserAdmin())
+	if (!p[Sel].WindowsInstaller && Opt.UseElevation && !IsUserAdmin())
 	{
 		// Required elevation
-		SHELLEXECUTEINFO sei = {sizeof(SHELLEXECUTEINFO)};
+		SHELLEXECUTEINFO sei = { sizeof(SHELLEXECUTEINFO) };
 		sei.fMask = SEE_MASK_NOCLOSEPROCESS;
 		sei.lpVerb = L"runas";
 		sei.lpFile = cmd_file;
@@ -810,41 +810,41 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 		sei.nShow = LowPriority ? SW_MINIMIZE : SW_SHOWNORMAL;
 		ifCreate = ShellExecuteEx(&sei);
 
-		if(ifCreate)
+		if (ifCreate)
 			pi.hProcess = sei.hProcess;
 		else
 			bElevationFailed = true;
 	}
 
 	// Если Elevation не запускался
-	if(!ifCreate)
+	if (!ifCreate)
 	{
 		ifCreate = CreateProcess   // Start the child process.
-		           (
-		               NULL,                         // No module name (use command line).
-		               cmd_line,                     // Command line.
-		               NULL,                         // Process handle not inheritable.
-		               NULL,                         // Thread handle not inheritable.
-		               FALSE,                        // Set handle inheritance to FALSE.
-		               LowPriority ? IDLE_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS, // Creation flags.
-		               NULL,                         // Use parent's environment block.
-		               NULL,                         // Use parent's starting directory.
-		               &si,                          // Pointer to STARTUPINFO structure.
-		               &pi                           // Pointer to PROCESS_INFORMATION structure.
-		           );
+		(
+			NULL,                         // No module name (use command line).
+			cmd_line,                     // Command line.
+			NULL,                         // Process handle not inheritable.
+			NULL,                         // Thread handle not inheritable.
+			FALSE,                        // Set handle inheritance to FALSE.
+			LowPriority ? IDLE_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS, // Creation flags.
+			NULL,                         // Use parent's environment block.
+			NULL,                         // Use parent's starting directory.
+			&si,                          // Pointer to STARTUPINFO structure.
+			&pi                           // Pointer to PROCESS_INFORMATION structure.
+		);
 
-		if(ifCreate)
+		if (ifCreate)
 			bPriorityChanged = TRUE;
 	}
 
-	if(!ifCreate)  //not Create
+	if (!ifCreate)  //not Create
 	{
 		dwErr = GetLastError();
 
-		if((dwErr == 0x2E4) && !bElevationFailed)
+		if ((dwErr == 0x2E4) && !bElevationFailed)
 		{
 			// Required elevation
-			SHELLEXECUTEINFO sei = {sizeof(SHELLEXECUTEINFO)};
+			SHELLEXECUTEINFO sei = { sizeof(SHELLEXECUTEINFO) };
 			sei.fMask = SEE_MASK_NOCLOSEPROCESS;
 			sei.lpVerb = L"runas";
 			sei.lpFile = cmd_file;
@@ -852,26 +852,26 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 			sei.nShow = LowPriority ? SW_MINIMIZE : SW_SHOWNORMAL;
 			ifCreate = ShellExecuteEx(&sei);
 
-			if(ifCreate)
+			if (ifCreate)
 				pi.hProcess = sei.hProcess;
 			else
 				dwErr = GetLastError();
 		}
 
-		if(!ifCreate)  //not Create
+		if (!ifCreate)  //not Create
 		{
 			wchar_t szErrCode[32];
-			const wchar_t *pszErrInfo = szErrCode;
+			const wchar_t* pszErrInfo = szErrCode;
 
-			if(dwErr == 0x000004C7)
+			if (dwErr == 0x000004C7)
 				pszErrInfo = GetMsg(MCancelledByUser);
 			else
 				StringCchPrintf(szErrCode, ARRAYSIZE(szErrCode), L"ErrorCode=0x%08X", dwErr);
 
-			if(hScreen)
+			if (hScreen)
 				Info.RestoreScreen(hScreen);
 
-			DrawMessage(FMSG_WARNING, 1, "%s",GetMsg(MPlugIn),GetMsg(MRunProgErr),cmd_line,pszErrInfo,GetMsg(MBtnOk),NULL);
+			DrawMessage(FMSG_WARNING, 1, "%s", GetMsg(MPlugIn), GetMsg(MRunProgErr), cmd_line, pszErrInfo, GetMsg(MBtnOk), NULL);
 			return -1;
 		}
 	}
@@ -883,26 +883,26 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 	//  dwErr = GetLastError();
 	//}
 	wchar_t SaveTitle[MAX_PATH];
-	GetConsoleTitle(SaveTitle,ARRAYSIZE(SaveTitle));
+	GetConsoleTitle(SaveTitle, ARRAYSIZE(SaveTitle));
 	SaveTitle[ARRAYSIZE(SaveTitle) - 1] = 0;
 	SetConsoleTitle(cmd_line);
 
-	if(pi.hProcess)
+	if (pi.hProcess)
 	{
 		// Wait until child process exits.
-		if((Action == Action_UninstallWait)
-		        || (Action == Action_ModifyWait)
-		        || (Action == Action_RepairWait))
+		if ((Action == Action_UninstallWait)
+			|| (Action == Action_ModifyWait)
+			|| (Action == Action_RepairWait))
 		{
-			DrawMessage(0, 0, "%s", GetMsg(MPlugIn), GetMsg(MWaitingCompletion), cmd_line,NULL);
+			DrawMessage(0, 0, "%s", GetMsg(MPlugIn), GetMsg(MWaitingCompletion), cmd_line, NULL);
 			nWaitSucceeded = 1;
 
-			while(true)
+			while (true)
 			{
-				if(WaitForSingleObject(pi.hProcess, 500) == WAIT_OBJECT_0)
+				if (WaitForSingleObject(pi.hProcess, 500) == WAIT_OBJECT_0)
 					break;
 
-				if(CheckForEsc())
+				if (CheckForEsc())
 				{
 					nWaitSucceeded = 0;
 					break;
@@ -914,12 +914,12 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 		CloseHandle(pi.hProcess);
 	}
 
-	if(pi.hThread)
+	if (pi.hThread)
 		CloseHandle(pi.hThread);
 
 	SetConsoleTitle(SaveTitle);
 
-	if(hScreen)
+	if (hScreen)
 	{
 		Info.RestoreScreen(NULL);
 		Info.RestoreScreen(hScreen);
@@ -928,8 +928,8 @@ int ExecuteEntry(int Sel, int Action, bool LowPriority)
 	return nWaitSucceeded;
 }
 
-typedef WINADVAPI LSTATUS(APIENTRY *FRegDeleteKeyExA)(__in HKEY hKey, __in LPCSTR lpSubKey, __in REGSAM samDesired, __reserved DWORD Reserved);
-typedef WINADVAPI LSTATUS(APIENTRY *FRegDeleteKeyExW)(__in HKEY hKey, __in LPCWSTR lpSubKey, __in REGSAM samDesired, __reserved DWORD Reserved);
+typedef WINADVAPI LSTATUS(APIENTRY* FRegDeleteKeyExA)(__in HKEY hKey, __in LPCSTR lpSubKey, __in REGSAM samDesired, __reserved DWORD Reserved);
+typedef WINADVAPI LSTATUS(APIENTRY* FRegDeleteKeyExW)(__in HKEY hKey, __in LPCWSTR lpSubKey, __in REGSAM samDesired, __reserved DWORD Reserved);
 
 bool DeleteEntry(int Sel)
 {
@@ -940,16 +940,16 @@ bool DeleteEntry(int Sel)
 	HKEY userKey;
 	LONG ret = RegOpenKeyEx(p[Sel].RegKey.Root, p[Sel].RegKey.Path, 0, DELETE | p[Sel].RegView, &userKey);
 
-	if(ret != ERROR_SUCCESS) return false;
+	if (ret != ERROR_SUCCESS) return false;
 
-	if(RegDeleteKeyEx)
+	if (RegDeleteKeyEx)
 		ret = RegDeleteKeyEx(userKey, p[Sel].SubKeyName, p[Sel].RegView, 0);
 	else
 		ret = RegDeleteKey(userKey, p[Sel].SubKeyName);
 
 	RegCloseKey(userKey);
 
-	if(ret != ERROR_SUCCESS) return false;
+	if (ret != ERROR_SUCCESS) return false;
 
 	return true;
 }
@@ -962,10 +962,10 @@ int WINAPI CompareEntries(const void* item1, const void* item2, void* userparam)
 //сравнить даты
 int WINAPI CompareEntriesDate(const void* item1, const void* item2, void* userparam)
 {
-	if(reinterpret_cast<const KeyInfo*>(item1)->InstDateN < reinterpret_cast<const KeyInfo*>(item2)->InstDateN)
+	if (reinterpret_cast<const KeyInfo*>(item1)->InstDateN < reinterpret_cast<const KeyInfo*>(item2)->InstDateN)
 		return 1;
 
-	if(reinterpret_cast<const KeyInfo*>(item1)->InstDateN > reinterpret_cast<const KeyInfo*>(item2)->InstDateN)
+	if (reinterpret_cast<const KeyInfo*>(item1)->InstDateN > reinterpret_cast<const KeyInfo*>(item2)->InstDateN)
 		return -1;
 
 	return CompareEntries(item1, item2, userparam);
@@ -976,31 +976,31 @@ void EnumKeys(RegKeyPath& RegKey, REGSAM RegView = 0)
 {
 	HKEY hKey;
 
-	if(RegOpenKeyEx(RegKey.Root, RegKey.Path, 0, KEY_READ | RegView, &hKey) != ERROR_SUCCESS)
+	if (RegOpenKeyEx(RegKey.Root, RegKey.Path, 0, KEY_READ | RegView, &hKey) != ERROR_SUCCESS)
 		return;
 
 	DWORD cSubKeys;
 
-	if(RegQueryInfoKey(hKey,NULL,NULL,NULL,&cSubKeys,NULL,NULL,NULL,NULL,NULL,NULL,NULL) != ERROR_SUCCESS)
+	if (RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
 		return;
 
 	wchar_t Buf[MAX_PATH];
 
-	for(DWORD fEnumIndex=0; fEnumIndex<cSubKeys; fEnumIndex++)
+	for (DWORD fEnumIndex = 0; fEnumIndex < cSubKeys; fEnumIndex++)
 	{
 		DWORD bufSize = ARRAYSIZE(Buf);
 		FILETIME ftLastWrite;
 
-		if(RegEnumKeyEx(hKey, fEnumIndex, Buf, &bufSize, NULL, NULL, NULL, &ftLastWrite) != ERROR_SUCCESS)
+		if (RegEnumKeyEx(hKey, fEnumIndex, Buf, &bufSize, NULL, NULL, NULL, &ftLastWrite) != ERROR_SUCCESS)
 			return;
 
-		if(nCount >= nRealCount)
+		if (nCount >= nRealCount)
 		{
 			nRealCount += JUMPREALLOC;
-			p = (KeyInfo *) realloc(p, sizeof(KeyInfo) * nRealCount);
+			p = (KeyInfo*)realloc(p, sizeof(KeyInfo) * nRealCount);
 		}
 
-		if(FillReg(p[nCount], Buf, RegKey, RegView))
+		if (FillReg(p[nCount], Buf, RegKey, RegView))
 		{
 			nCount++;
 		}
@@ -1010,7 +1010,7 @@ void EnumKeys(RegKeyPath& RegKey, REGSAM RegView = 0)
 }
 #undef JUMPREALLOC
 
-typedef WINBASEAPI VOID (WINAPI *FGetNativeSystemInfo)(__out LPSYSTEM_INFO lpSystemInfo);
+typedef WINBASEAPI VOID(WINAPI* FGetNativeSystemInfo)(__out LPSYSTEM_INFO lpSystemInfo);
 
 #define EMPTYSTR L"  "
 //Обновление информации
@@ -1021,7 +1021,7 @@ void UpDateInfo(void)
 	FreeLibrary(h_mod);
 	bool is_os_x64 = false;
 
-	if(GetNativeSystemInfo)
+	if (GetNativeSystemInfo)
 	{
 		SYSTEM_INFO si;
 		GetNativeSystemInfo(&si);
@@ -1030,9 +1030,9 @@ void UpDateInfo(void)
 
 	nCount = nRealCount = 0;
 
-	for(int i=0; i<ARRAYSIZE(UninstKeys); i++)
+	for (int i = 0; i < ARRAYSIZE(UninstKeys); i++)
 	{
-		if(is_os_x64 && (UninstKeys[i].Root == HKEY_LOCAL_MACHINE))
+		if (is_os_x64 && (UninstKeys[i].Root == HKEY_LOCAL_MACHINE))
 		{
 			EnumKeys(UninstKeys[i], KEY_WOW64_64KEY);
 			EnumKeys(UninstKeys[i], KEY_WOW64_32KEY);
@@ -1043,18 +1043,18 @@ void UpDateInfo(void)
 		}
 	}
 
-	p = (KeyInfo *) realloc(p, sizeof(KeyInfo) * nCount);
+	p = (KeyInfo*)realloc(p, sizeof(KeyInfo) * nCount);
 
-	if(Opt.SortByDate)
+	if (Opt.SortByDate)
 		FSF.qsort(p, nCount, sizeof(KeyInfo), CompareEntriesDate, nullptr);
 	else
 		FSF.qsort(p, nCount, sizeof(KeyInfo), CompareEntries, nullptr);
 
-	FLI = (FarListItem *) realloc(FLI, sizeof(FarListItem) * nCount);
+	FLI = (FarListItem*)realloc(FLI, sizeof(FarListItem) * nCount);
 	ZeroMemory(FLI, sizeof(FarListItem) * nCount);
 	FL.ItemsNumber = nCount;
 	FL.Items = FLI;
-	FL.StructSize = sizeof (FarList);
+	FL.StructSize = sizeof(FarList);
 
 	const wchar_t* sx86 = GetMsg(MListHKLMx86);
 	const wchar_t* sx64 = GetMsg(MListHKLMx64);
@@ -1071,14 +1071,14 @@ void UpDateInfo(void)
 	FirstChar[2] = L' ';
 	FirstChar[3] = 0;
 
-	for(int i=0; i<nCount; i++)
+	for (int i = 0; i < nCount; i++)
 	{
 		size_t MaxSize = ARRAYSIZE(p[i].ListItem);
 		FLI[i].Text = p[i].ListItem;
 
 		wchar_t* text = const_cast<wchar_t*>(FLI[i].Text);
 
-		if(FirstChar[1] != FSF.LUpper(p[i].Keys[DisplayName][0]))
+		if (FirstChar[1] != FSF.LUpper(p[i].Keys[DisplayName][0]))
 		{
 			FirstChar[1] = FSF.LUpper(p[i].Keys[DisplayName][0]);
 			StringCchCopy(text, MaxSize, FirstChar);
@@ -1086,9 +1086,9 @@ void UpDateInfo(void)
 		else
 			StringCchCopy(text, MaxSize, EMPTYSTR);
 
-		if(p[i].RegKey.Root == HKEY_LOCAL_MACHINE)
+		if (p[i].RegKey.Root == HKEY_LOCAL_MACHINE)
 		{
-			if(is_os_x64)
+			if (is_os_x64)
 				StringCchCat(text, MaxSize, (p[i].RegView == KEY_WOW64_64KEY) ? sx64 : sx86);
 			else
 				StringCchCat(text, MaxSize, sHKLM);
@@ -1111,8 +1111,8 @@ void UpDateInfo(void)
 		//  StringCchCat(text, MaxSize, L"   "));
 		size_t nCurLen = wcslen(text);
 		//StringCchCat(text, MaxSize, p[i].Keys[DisplayName]);
-		StringCchCopyN(text+nCurLen, MaxSize-nCurLen, p[i].Keys[DisplayName], MaxSize-nCurLen-1);
-		text[MaxSize-1] = 0;
+		StringCchCopyN(text + nCurLen, MaxSize - nCurLen, p[i].Keys[DisplayName], MaxSize - nCurLen - 1);
+		text[MaxSize - 1] = 0;
 	}
 
 	ListSize = nCount;
@@ -1123,42 +1123,42 @@ void UpDateInfo(void)
 
 void ReadRegistry()
 {
-	PluginSettings settings(MainGuid,Info.SettingsControl);
+	PluginSettings settings(MainGuid, Info.SettingsControl);
 
-	Opt.WhereWork=settings.Get(0,L"WhereWork",3);
-	if((Opt.WhereWork<0) || (Opt.WhereWork>3))
-			Opt.WhereWork=3;
+	Opt.WhereWork = settings.Get(0, L"WhereWork", 3);
+	if ((Opt.WhereWork < 0) || (Opt.WhereWork > 3))
+		Opt.WhereWork = 3;
 
-	settings.Set(0,L"WhereWork",Opt.WhereWork);
+	settings.Set(0, L"WhereWork", Opt.WhereWork);
 
-	Opt.EnterAction=settings.Get(0,L"EnterAction",Action_Menu);
-	if((Opt.EnterAction<0) || (Opt.EnterAction>Action_Menu))
-			Opt.EnterAction=Action_Menu;
+	Opt.EnterAction = settings.Get(0, L"EnterAction", Action_Menu);
+	if ((Opt.EnterAction < 0) || (Opt.EnterAction > Action_Menu))
+		Opt.EnterAction = Action_Menu;
 
-	settings.Set(0,L"EnterAction",Opt.EnterAction);
+	settings.Set(0, L"EnterAction", Opt.EnterAction);
 
-	Opt.ShiftEnterAction=settings.Get(0,L"ShiftEnterAction",Action_UninstallWait);
-	if((Opt.ShiftEnterAction<0) || (Opt.EnterAction>Action_Menu))
-			Opt.ShiftEnterAction=Action_Menu;
+	Opt.ShiftEnterAction = settings.Get(0, L"ShiftEnterAction", Action_UninstallWait);
+	if ((Opt.ShiftEnterAction < 0) || (Opt.EnterAction > Action_Menu))
+		Opt.ShiftEnterAction = Action_Menu;
 
-	settings.Set(0,L"ShiftEnterAction",Opt.ShiftEnterAction);
+	settings.Set(0, L"ShiftEnterAction", Opt.ShiftEnterAction);
 
-	Opt.UseElevation=settings.Get(0,L"UseElevation",1);
-	if((Opt.UseElevation<0) || (Opt.UseElevation>1))
-			Opt.UseElevation=1;
+	Opt.UseElevation = settings.Get(0, L"UseElevation", 1);
+	if ((Opt.UseElevation < 0) || (Opt.UseElevation > 1))
+		Opt.UseElevation = 1;
 
-	settings.Set(0,L"UseElevation",Opt.UseElevation);
+	settings.Set(0, L"UseElevation", Opt.UseElevation);
 
-	Opt.RunLowPriority=settings.Get(0,L"RunLowPriority",0);
-	if((Opt.RunLowPriority<0) || (Opt.RunLowPriority>1))
-			Opt.RunLowPriority=0;
+	Opt.RunLowPriority = settings.Get(0, L"RunLowPriority", 0);
+	if ((Opt.RunLowPriority < 0) || (Opt.RunLowPriority > 1))
+		Opt.RunLowPriority = 0;
 
-	settings.Set(0,L"RunLowPriority",Opt.RunLowPriority);
+	settings.Set(0, L"RunLowPriority", Opt.RunLowPriority);
 
-	Opt.ForceMsiUse=settings.Get(0,L"ForceMsiUse",0);
-	if((Opt.ForceMsiUse<0) || (Opt.ForceMsiUse>1))
-			Opt.ForceMsiUse=0;
+	Opt.ForceMsiUse = settings.Get(0, L"ForceMsiUse", 0);
+	if ((Opt.ForceMsiUse < 0) || (Opt.ForceMsiUse > 1))
+		Opt.ForceMsiUse = 0;
 
-	settings.Set(0,L"ForceMsiUse",Opt.ForceMsiUse);
+	settings.Set(0, L"ForceMsiUse", Opt.ForceMsiUse);
 	Opt.SortByDate = false;
 }
