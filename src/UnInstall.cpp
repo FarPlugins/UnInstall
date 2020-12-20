@@ -10,7 +10,6 @@
 #include "DlgBuilder.hpp"
 #include "EPlugin.cpp"
 #include "farcolor.hpp"
-#include "farkeys.hpp"
 #include "FarLang.h"
 #include "UnInstall.hpp"
 #include "version.hpp"
@@ -231,7 +230,7 @@ static INT_PTR WINAPI DlgProc(HANDLE hDlg, intptr_t Msg, intptr_t Param1, void* 
 					{
 						INPUT_RECORD irecord;
 						irecord.EventType = KEY_EVENT;
-						KEY_EVENT_RECORD key = { false,0,KEY_ENTER,0,0 };
+						KEY_EVENT_RECORD key = { false,0,VK_RETURN,0,0 };
 						irecord.Event.KeyEvent = key;
 						DlgProc(hDlg, DN_CONTROLINPUT, LIST_BOX, &irecord);
 
