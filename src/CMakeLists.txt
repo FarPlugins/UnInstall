@@ -3,7 +3,6 @@ project(UnInstall CXX)
 set(SRC_CPP
     UnInstall.cpp
     UnInstall.hpp
-    DlgBuilder.hpp
     FarLang.h
     guid.hpp
     version.hpp

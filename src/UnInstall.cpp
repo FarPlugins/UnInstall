@@ -14,6 +14,7 @@
 #include "FarLang.h"
 #include "UnInstall.hpp"
 #include "version.hpp"
+#include <vector>
 
 void WINAPI GetGlobalInfoW(struct GlobalInfo* gInfo)
 {
@@ -526,7 +527,7 @@ HANDLE WINAPI OpenW(const struct OpenInfo* oInfo)
 intptr_t WINAPI ConfigureW(const struct ConfigureInfo* cInfo)
 {
 	PluginDialogBuilder Config(Info, MainGuid, ConfigGuid, MPlugIn, L"Configuration");
-	FarDialogItem* p1, * p2;
+	FarDialogItem* p2;
 	BOOL bShowInViewer = (Opt.WhereWork & 1) != 0;
 	BOOL bShowInEditor = (Opt.WhereWork & 2) != 0;
 	//BOOL bEnterWaitCompletion = (Opt.EnterFunction != 0);
@@ -540,23 +541,18 @@ intptr_t WINAPI ConfigureW(const struct ConfigureInfo* cInfo)
 	Config.AddCheckbox(MLowPriority, &bUseElevation);
 	Config.AddCheckbox(MForceMsiUse, &bForceMsiUse);
 	Config.AddSeparator();
-	FarList AEnter{}, AShiftEnter{};
-	AEnter.ItemsNumber = AShiftEnter.ItemsNumber = 7;
-	AEnter.Items = (FarListItem*)calloc(AEnter.ItemsNumber, sizeof(FarListItem));
-	AShiftEnter.Items = (FarListItem*)calloc(AEnter.ItemsNumber, sizeof(FarListItem));
 
-	AEnter.StructSize = sizeof(FarList);
-	AShiftEnter.StructSize = sizeof(FarList);
-	for (size_t i = 0; i < AEnter.ItemsNumber; i++)
-	{
-		AEnter.Items[i].Text = GetMsg(MActionUninstallWait + i);
-		AShiftEnter.Items[i].Text = AEnter.Items[i].Text;
-	}
+    std::vector<const wchar_t*> AEnter;
+    AEnter.reserve(7);
+    for (size_t i = 0; i < 7; i++)
+    {
+        AEnter.push_back(_wcsdup(GetMsg(MActionUninstallWait + i)));
+    }
+	p2 = Config.AddComboBox(&Opt.EnterAction, nullptr,23, AEnter.data(),AEnter.size(), DIF_NONE);
+    Config.AddTextBefore(p2,MEnterAction);
 
-	p1 = Config.AddText(MEnterAction); p2 = Config.AddComboBox(23, &AEnter, &Opt.EnterAction);
-	Config.MoveItemAfter(p1, p2);
-	p1 = Config.AddText(MShiftEnterAction); p2 = Config.AddComboBox(23, &AShiftEnter, &Opt.ShiftEnterAction);
-	Config.MoveItemAfter(p1, p2);
+    p2 = Config.AddComboBox(&Opt.ShiftEnterAction, nullptr,23, AEnter.data(),AEnter.size(), DIF_NONE);
+    Config.AddTextBefore(p2,MShiftEnterAction);
 	Config.AddOKCancel(MBtnOk, MBtnCancel);
 
 	if (Config.ShowDialog())
