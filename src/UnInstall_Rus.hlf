@@ -41,14 +41,14 @@ $^#Содержание#
 
  Запустить программу-установщик                  #Enter or Shift-Enter#
   Действие (Удаление, Измнение, Восстановление, Меню и ждать/не ждать)
-  указываются в ~настройке плагина~@Configuration@
+  указываются в ~настройке плагина~@@ESCAPE@Configuration@ESCAPE@@
 
  Открыть диалог настроек плагина                         #Alt-Shift-F9#
 
- ~Настройка~@Configuration@
- ~Информация о программе~@UninstallEntry@
- ~Новые версии~@http://forum.farmanager.com/viewtopic.php?t=3529@
- ~Обсуждение~@http://forum.farmanager.com/viewtopic.php?t=3597@
+ ~Настройка~@@ESCAPE@Configuration@ESCAPE@@
+ ~Информация о программе~@@ESCAPE@UninstallEntry@ESCAPE@@
+ ~Новые версии~@@ESCAPE@http://forum.farmanager.com/viewtopic.php?t=3529@ESCAPE@@
+ ~Обсуждение~@@ESCAPE@http://forum.farmanager.com/viewtopic.php?t=3597@ESCAPE@@
 
 @Configuration
 $^#UnInstall ${PLUGIN_VERSION}#
@@ -75,7 +75,7 @@ $^#Настройка плагина#
  * Восстановить (ждать), Восстановить - Repair (доступно только для MSI)
  * Меню                               - Выбор действия через меню
 
- ~Содержание~@Contents@
+ ~Содержание~@@ESCAPE@Contents@ESCAPE@@
 
 @UninstallEntry
 $^#UnInstall ${PLUGIN_VERSION}#
@@ -83,7 +83,7 @@ $^#Информация о программе#
 
  #PgUp#/#PgDn# перейти к предыдущей/следующей программе.
 
- ~Содержание~@Contents@
+ ~Содержание~@@ESCAPE@Contents@ESCAPE@@
 
 @ActionMenu
 $^#UnInstall ${PLUGIN_VERSION}#
@@ -91,4 +91,4 @@ $^#Выбор действия#
 
  #F7# сменить приоритет запускаемого процесса
 
- ~Содержание~@Contents@
+ ~Содержание~@@ESCAPE@Contents@ESCAPE@@

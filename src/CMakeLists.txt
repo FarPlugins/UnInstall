@@ -122,6 +122,7 @@ set_target_properties(UnInstall
 #====================================================
 # build misc files
 #====================================================
+# used @@ESCAPE and ESCAPE@@ for escape @ in files
 configure_file(File_ID.diz File_ID.diz)
 configure_file(UnInstall_Eng.hlf UnInstall_Eng.hlf)
 configure_file(UnInstall_Rus.hlf UnInstall_Rus.hlf)
