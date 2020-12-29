@@ -40,14 +40,14 @@ $^#Contents#
 
  To start processing                                 #Enter or Shift-Enter#
   Actions (Uninstall, Modify, Repair, Menu and Wait/Don't Wait)
-  are specified in ~Configuration~@Configuration@
+  are specified in ~Configuration~@@ESCAPE@Configuration@ESCAPE@@
 
  Open Configuration dialog                                   #Alt-Shift-F9#
 
- ~Configuration~@Configuration@
- ~Entry information~@UninstallEntry@
- ~New versions~@http://forum.farmanager.com/viewtopic.php?t=3529@
- ~Discussion~@http://forum.farmanager.com/viewtopic.php?t=3597@
+ ~Configuration~@@ESCAPE@Configuration@ESCAPE@@
+ ~Entry information~@@ESCAPE@UninstallEntry@ESCAPE@@
+ ~New versions~@@ESCAPE@http://forum.farmanager.com/viewtopic.php?t=3529@ESCAPE@@
+ ~Discussion~@@ESCAPE@http://forum.farmanager.com/viewtopic.php?t=3597@ESCAPE@@
 
 @Configuration
 $^#UnInstall ${PLUGIN_VERSION}#
@@ -73,7 +73,7 @@ in the registry - this command will be used instead of «msiexec /?{GUID}».
  * Repair (wait), Repair       - Repair (only for MSI)
  * Menu                        - Choose action in run time
 
- ~Contents~@Contents@
+ ~Contents~@@ESCAPE@Contents@ESCAPE@@
 
 @UninstallEntry
 $^#UnInstall ${PLUGIN_VERSION}#
@@ -81,7 +81,7 @@ $^#Uninstall entry information#
 
  Use #PgUp#/#PgDn# to view previous/next program
 
- ~Contents~@Contents@
+ ~Contents~@@ESCAPE@Contents@ESCAPE@@
 
 @ActionMenu
 $^#UnInstall ${PLUGIN_VERSION}#
@@ -89,4 +89,4 @@ $^#Select action#
 
  #F7# change proirity of uninstall process
 
- ~Contents~@Contents@
+ ~Contents~@@ESCAPE@Contents@ESCAPE@@
