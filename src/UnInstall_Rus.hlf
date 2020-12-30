@@ -3,7 +3,7 @@
 .Options CtrlStartPosChar=^<wrap>
 
 @Contents
-$^UnInstall ${PLUGIN_VERSION}#
+$^#UnInstall ${PLUGIN_VERSION}#
 $^#Содержание#
 
  #Колонки#
