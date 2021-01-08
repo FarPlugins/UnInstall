@@ -1,4 +1,4 @@
-project(UnInstall CXX)
+project(UnInstall VERSION ${PLUGIN_VERSION} LANGUAGES CXX)
 
 set(SRC_CPP
     UnInstall.cpp
@@ -91,46 +91,37 @@ endif ()
 #====================================================
 
 set(SRC_FILES ${SRC_CPP} ${SRC_DEF})
-add_library(UnInstall SHARED ${SRC_FILES})
-target_include_directories(UnInstall
-    PUBLIC ${PROJECT_SOURCE_DIR}/../farsdk/unicode
+add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
+target_include_directories(${PROJECT_NAME}
+    PRIVATE ${PROJECT_SOURCE_DIR}/../farsdk/unicode
     )
 
-set_target_properties(UnInstall PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     )
 
 if (${CMAKE_BUILD_TYPE} MATCHES Debug)
-  target_compile_options(UnInstall
+  target_compile_options(${PROJECT_NAME}
       PUBLIC $<$<COMPILE_LANGUAGE:C>:${MAIN_FLAGS_C_DEBUG}>
       PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${MAIN_FLAGS_CXX_DEBUG}>
       )
 else ()
-  target_compile_options(UnInstall
+  target_compile_options(${PROJECT_NAME}
       PUBLIC $<$<COMPILE_LANGUAGE:C>:${MAIN_FLAGS_C_RELEASE}>
       PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${MAIN_FLAGS_CXX_RELEASE}>
       )
 endif ()
 
-set_target_properties(UnInstall
+set_target_properties(${PROJECT_NAME}
     PROPERTIES
     LINK_FLAGS "${LINK_FLAGS}"
     )
 
-#====================================================
-# build misc files
-#====================================================
-# used @@ESCAPE and ESCAPE@@ for escape @ in files
-configure_file(File_ID.diz File_ID.diz)
-configure_file(UnInstall_Eng.hlf UnInstall_Eng.hlf)
-configure_file(UnInstall_Rus.hlf UnInstall_Rus.hlf)
-
-#====================================================
-# install
-#====================================================
-install(TARGETS UnInstall RUNTIME DESTINATION .)
-install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map DESTINATION .)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/UnInstall_Eng.hlf ${CMAKE_CURRENT_BINARY_DIR}/UnInstall_Rus.hlf UnInstall_Eng.lng UnInstall_Rus.lng DESTINATION .)
-install(FILES ${PROJECT_SOURCE_DIR}/../WhatsNew.Rus.txt ${PROJECT_SOURCE_DIR}/../ReadMe.Rus.txt ${CMAKE_CURRENT_BINARY_DIR}/File_ID.diz DESTINATION .)
+# create archive with pdb file
+add_custom_target(
+    ${PROJECT_NAME}_PDB ALL
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "../${PACKAGE_FILE_NAME}.pdb.zip" --format=zip $<TARGET_PDB_FILE:${PROJECT_NAME}>
+    DEPENDS $<TARGET_PDB_FILE:${PROJECT_NAME}>
+)
